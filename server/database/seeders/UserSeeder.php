@@ -9,8 +9,8 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $email = env('ADMIN_EMAIL', 'admin@stokku.test');
-        $password = env('ADMIN_PASSWORD');
+        $email = config('app.admin.email', 'admin@stokku.test');
+        $password = config('app.admin.password');
 
         if (app()->environment('production') && blank($password)) {
             $this->command?->warn(
@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
         User::query()->updateOrCreate(
             ['email' => $email],
             [
-                'name' => env('ADMIN_NAME', 'Administrator'),
+                'name' => config('app.admin.name', 'Administrator'),
                 'password' => $password ?: 'password',
             ],
         );
