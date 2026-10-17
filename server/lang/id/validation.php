@@ -49,7 +49,7 @@ return [
 
     'custom' => [
         'sku' => [
-            'unique' => 'Kode produk sudah digunakan. Gunakan kode lain.',
+            'unique' => 'Kode barang sudah digunakan. Gunakan kode lain.',
         ],
         'category_id' => [
             'exists' => 'Kategori yang dipilih tidak tersedia atau sudah tidak aktif.',
@@ -67,14 +67,14 @@ return [
 
     'attributes' => [
         'name' => 'nama',
-        'sku' => 'kode produk',
+        'sku' => 'kode barang',
         'category_id' => 'kategori',
         'unit_id' => 'satuan',
         'purchase_price' => 'harga beli',
         'selling_price' => 'harga jual',
         'opening_stock' => 'stok awal',
         'current_stock' => 'stok saat ini',
-        'minimum_stock' => 'batas stok minimum',
+        'minimum_stock' => 'stok minimum',
         'description' => 'deskripsi',
         'notes' => 'catatan',
         'is_active' => 'status',
@@ -84,7 +84,7 @@ return [
         'quantity' => 'jumlah',
         'unit_price' => 'harga',
         'transaction_date' => 'tanggal transaksi',
-        'product_id' => 'produk',
+        'product_id' => 'barang',
         'transaction_type' => 'jenis transaksi',
         'date_from' => 'tanggal mulai',
         'date_to' => 'tanggal akhir',

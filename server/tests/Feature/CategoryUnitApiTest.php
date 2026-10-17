@@ -25,7 +25,7 @@ class CategoryUnitApiTest extends TestCase
 
         $this->deleteJson("/api/v1/categories/{$category->id}")
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Kategori tidak dapat dihapus karena masih digunakan oleh produk.');
+            ->assertJsonPath('message', 'Kategori tidak dapat dihapus karena masih digunakan oleh barang.');
 
         $this->assertDatabaseHas('categories', ['id' => $category->id]);
     }
@@ -82,7 +82,7 @@ class CategoryUnitApiTest extends TestCase
 
         $this->deleteJson("/api/v1/units/{$unit->id}")
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Satuan tidak dapat dihapus karena masih digunakan oleh produk.');
+            ->assertJsonPath('message', 'Satuan tidak dapat dihapus karena masih digunakan oleh barang.');
 
         $this->assertDatabaseHas('units', ['id' => $unit->id]);
     }

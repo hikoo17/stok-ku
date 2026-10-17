@@ -90,7 +90,7 @@ class CategoryController extends Controller
     {
         if ($category->products()->exists()) {
             return response()->json([
-                'message' => 'Kategori tidak dapat dihapus karena masih digunakan oleh produk.',
+                'message' => 'Kategori tidak dapat dihapus karena masih digunakan oleh barang.',
             ], 422);
         }
 

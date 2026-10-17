@@ -85,7 +85,7 @@ class InventoryService
 
                 if (! $product->is_active) {
                     throw ValidationException::withMessages([
-                        'product_id' => 'Produk ini sedang diarsipkan dan tidak dapat ditransaksikan.',
+                        'product_id' => 'Barang ini sedang diarsipkan dan tidak dapat ditransaksikan.',
                     ]);
                 }
 

@@ -74,7 +74,7 @@ class ReportController extends Controller
             $this->writeMetadata($handle, 'Laporan Stok Saat Ini', $filters);
 
             fputcsv($handle, [
-                'Kode Produk',
+                'Kode Barang',
                 'Nama Barang',
                 'Kategori',
                 'Satuan',
@@ -119,7 +119,7 @@ class ReportController extends Controller
             fputcsv($handle, [
                 'Tanggal',
                 'Referensi',
-                'Kode Produk',
+                'Kode Barang',
                 'Nama Barang',
                 'Jenis Transaksi',
                 'Jumlah',
@@ -159,7 +159,7 @@ class ReportController extends Controller
             $this->writeMetadata($handle, 'Laporan Stok Menipis', $filters);
 
             fputcsv($handle, [
-                'Kode Produk',
+                'Kode Barang',
                 'Nama Barang',
                 'Kategori',
                 'Satuan',

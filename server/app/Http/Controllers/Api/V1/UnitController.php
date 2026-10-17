@@ -80,7 +80,7 @@ class UnitController extends Controller
     {
         if ($unit->products()->exists()) {
             return response()->json([
-                'message' => 'Satuan tidak dapat dihapus karena masih digunakan oleh produk.',
+                'message' => 'Satuan tidak dapat dihapus karena masih digunakan oleh barang.',
             ], 422);
         }
 
