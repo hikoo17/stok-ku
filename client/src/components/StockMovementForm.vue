@@ -5,7 +5,6 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   CheckCircle2,
-  History,
   Info,
   Package,
   Save,
@@ -255,21 +254,7 @@ onMounted(loadProducts)
 
 <template>
   <div>
-    <PageHeader :title="config.title" :description="config.description">
-      <template #actions>
-        <RouterLink to="/history" class="btn btn-secondary">
-          <History class="h-4 w-4" aria-hidden="true" />
-          Riwayat Stok
-        </RouterLink>
-        <RouterLink
-          :to="isIncoming ? '/stock-out' : '/stock-in'"
-          class="btn btn-secondary"
-        >
-          <component :is="isIncoming ? ArrowUpFromLine : ArrowDownToLine" class="h-4 w-4" aria-hidden="true" />
-          {{ isIncoming ? 'Barang Keluar' : 'Barang Masuk' }}
-        </RouterLink>
-      </template>
-    </PageHeader>
+    <PageHeader :title="config.title" :description="config.description" />
 
     <div v-if="loading" class="grid grid-cols-1 gap-6 lg:grid-cols-3" role="status" aria-label="Memuat data barang">
       <div class="space-y-6 lg:col-span-2">

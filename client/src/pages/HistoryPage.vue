@@ -2,8 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
   History,
   RefreshCw,
   RotateCcw,
@@ -31,7 +29,8 @@ const columns = [
   { key: 'product', label: 'Barang' },
   { key: 'transaction_type', label: 'Jenis' },
   { key: 'quantity', label: 'Jumlah', align: 'right' },
-  { key: 'stock', label: 'Stok Sebelum → Sesudah', align: 'right' },
+  { key: 'stock_before', label: 'Stok Sebelum', align: 'right' },
+  { key: 'stock_after', label: 'Stok Sesudah', align: 'right' },
   { key: 'unit_price', label: 'Harga', align: 'right' },
   { key: 'description', label: 'Keterangan' },
   { key: 'created_by', label: 'Dicatat Oleh' },
@@ -174,18 +173,7 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
 
 <template>
   <div>
-    <PageHeader title="Riwayat Stok" description="Riwayat pergerakan stok.">
-      <template #actions>
-        <RouterLink to="/stock-in" class="btn btn-secondary">
-          <ArrowDownToLine class="h-4 w-4" aria-hidden="true" />
-          Barang Masuk
-        </RouterLink>
-        <RouterLink to="/stock-out" class="btn btn-secondary">
-          <ArrowUpFromLine class="h-4 w-4" aria-hidden="true" />
-          Barang Keluar
-        </RouterLink>
-      </template>
-    </PageHeader>
+    <PageHeader title="Riwayat Stok" description="Riwayat pergerakan stok." />
 
     <div class="filter-bar">
       <div class="grid grid-cols-1 gap-3 lg:grid-cols-12">
@@ -295,12 +283,12 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
           </span>
         </template>
 
-        <template #cell-stock="{ row }">
-          <span class="text-sm text-slate-600">
-            {{ formatNumber(row.stock_before) }}
-            <span class="mx-1 text-slate-300">→</span>
-            <span class="font-semibold text-slate-900">{{ formatNumber(row.stock_after) }}</span>
-          </span>
+        <template #cell-stock_before="{ row }">
+          <span class="text-sm text-slate-600">{{ formatNumber(row.stock_before) }}</span>
+        </template>
+
+        <template #cell-stock_after="{ row }">
+          <span class="text-sm font-semibold text-slate-900">{{ formatNumber(row.stock_after) }}</span>
         </template>
 
         <template #cell-unit_price="{ row }">

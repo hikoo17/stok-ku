@@ -133,7 +133,8 @@ const movementColumns = [
   { key: 'product', label: 'Barang' },
   { key: 'transaction_type', label: 'Jenis' },
   { key: 'quantity', label: 'Jumlah', align: 'right' },
-  { key: 'stock', label: 'Sebelum → Sesudah', align: 'right' },
+  { key: 'stock_before', label: 'Stok Sebelum', align: 'right' },
+  { key: 'stock_after', label: 'Stok Sesudah', align: 'right' },
   { key: 'unit_price', label: 'Harga', align: 'right' },
   { key: 'description', label: 'Keterangan' },
 ]
@@ -742,12 +743,11 @@ onBeforeUnmount(() => {
                 <span class="text-xs font-normal text-slate-500">{{ row.product?.unit?.abbreviation }}</span>
               </span>
             </template>
-            <template #cell-stock="{ row }">
-              <span class="text-sm text-slate-600">
-                {{ formatNumber(row.stock_before) }}
-                <span class="mx-1 text-slate-300">→</span>
-                <span class="font-semibold text-slate-900">{{ formatNumber(row.stock_after) }}</span>
-              </span>
+            <template #cell-stock_before="{ row }">
+              <span class="text-sm text-slate-600">{{ formatNumber(row.stock_before) }}</span>
+            </template>
+            <template #cell-stock_after="{ row }">
+              <span class="text-sm font-semibold text-slate-900">{{ formatNumber(row.stock_after) }}</span>
             </template>
             <template #cell-unit_price="{ row }">{{ formatCurrency(row.unit_price) }}</template>
             <template #cell-description="{ row }">

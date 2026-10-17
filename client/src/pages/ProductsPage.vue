@@ -322,7 +322,6 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
               v-if="!row.is_active"
               status="inactive"
               label="Diarsipkan"
-              :dot="false"
               class="shrink-0"
             />
           </div>

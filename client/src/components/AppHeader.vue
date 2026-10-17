@@ -67,11 +67,6 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutsideCli
       >
         <Menu class="h-5 w-5" aria-hidden="true" />
       </button>
-
-      <div class="min-w-0">
-        <p class="truncate text-sm font-semibold text-slate-900">Stok Ku</p>
-        <p class="hidden text-xs text-slate-500 sm:block">Manajemen Persediaan</p>
-      </div>
     </div>
 
     <div class="flex items-center gap-2">
