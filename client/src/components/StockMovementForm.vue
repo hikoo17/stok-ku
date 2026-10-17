@@ -149,7 +149,7 @@ async function loadProducts(options = {}) {
   loadError.value = ''
 
   try {
-    const response = await productService.options()
+    const response = await productService.options({ limit: 500 })
     products.value = response.data.data
 
     const requestedId = Number(route.query.product_id)
