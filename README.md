@@ -36,6 +36,21 @@ Backend Laravel menyediakan REST API dan frontend Vue 3 berjalan sebagai aplikas
 - Lucide Vue Next
 - Chart.js dan vue-chartjs
 
+## Panduan Antarmuka
+
+Seluruh teks antarmuka menggunakan Bahasa Indonesia. Ketentuan visual utama:
+
+- Tinggi kontrol standar: 40px untuk input, select, dan tombol utama.
+- Tombol kompak: 32px (`.btn-sm`) untuk toolbar filter dan 36px (`.btn-icon-sm`) untuk aksi tabel.
+- Tombol besar: 44px (`.btn-lg`) untuk aksi utama halaman login.
+- Label field berada di atas input, memakai ukuran dan warna yang sama di seluruh formulir.
+- Radius, border, shadow, dan focus ring mengikuti kelas utilitas di `client/src/style.css`.
+- Status stok memakai badge yang sama: Stok Aman, Stok Menipis, dan Stok Habis.
+- Halaman menggunakan komponen bersama: `PageHeader`, `DataTable`, `Pagination`, `SearchInput`, `FilterDropdown`, `AppModal`, `ConfirmationDialog`, dan toast.
+- Loading awal memakai skeleton (`Skeleton`, `SkeletonTable`, `SkeletonStatCard`); aksi singkat memakai `LoadingSpinner`.
+- Dialog menangkap fokus keyboard, mendukung tombol Escape, dan mengembalikan fokus ke pemicu setelah ditutup.
+- Animasi dinonaktifkan otomatis ketika pengguna memilih `prefers-reduced-motion`.
+
 ## Struktur Proyek
 
 ```
