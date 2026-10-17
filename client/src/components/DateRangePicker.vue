@@ -2,7 +2,7 @@
 import { useId } from 'vue'
 import FormField from './FormField.vue'
 
-defineProps({
+const props = defineProps({
   from: {
     type: String,
     default: '',
@@ -23,7 +23,11 @@ defineProps({
     type: String,
     default: '',
   },
-  error: {
+  fromError: {
+    type: String,
+    default: '',
+  },
+  toError: {
     type: String,
     default: '',
   },
@@ -36,23 +40,24 @@ const toId = useId()
 
 <template>
   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-    <FormField :label="fromLabel" :for-id="fromId" :error="error">
+    <FormField :label="fromLabel" :for-id="fromId" :error="fromError">
       <input
         :id="fromId"
         :value="from"
         type="date"
         class="field-input"
-        :class="{ 'field-input-error': error }"
+        :class="{ 'field-input-error': fromError }"
         :max="max"
         @input="emit('update:from', $event.target.value)"
       />
     </FormField>
-    <FormField :label="toLabel" :for-id="toId">
+    <FormField :label="toLabel" :for-id="toId" :error="toError">
       <input
         :id="toId"
         :value="to"
         type="date"
         class="field-input"
+        :class="{ 'field-input-error': toError }"
         :min="from"
         :max="max"
         @input="emit('update:to', $event.target.value)"

@@ -223,7 +223,7 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
           v-model:from="filters.date_from"
           v-model:to="filters.date_to"
           :max="todayInput()"
-          :error="filterError"
+          :to-error="filterError"
         />
       </div>
     </div>
