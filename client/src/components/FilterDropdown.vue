@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed, useId } from 'vue'
+
+const props = defineProps({
   modelValue: {
     type: [String, Number, Boolean, null],
     default: '',
@@ -23,17 +25,17 @@ defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+const generatedId = useId()
+const fieldId = computed(() => props.id || generatedId)
 </script>
 
 <template>
   <div class="w-full">
-    <label v-if="label" :for="id" class="mb-1.5 block text-xs font-medium text-slate-600">
-      {{ label }}
-    </label>
+    <label v-if="label" :for="fieldId" class="field-label">{{ label }}</label>
     <select
-      :id="id"
+      :id="fieldId"
       :value="modelValue"
-      class="field-input cursor-pointer py-2.5"
+      class="field-input cursor-pointer"
       :aria-label="label || ariaLabel"
       @change="emit('update:modelValue', $event.target.value)"
     >

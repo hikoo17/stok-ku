@@ -1,6 +1,7 @@
 <script setup>
 import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-vue-next'
 import EmptyState from './EmptyState.vue'
+import SkeletonTable from './SkeletonTable.vue'
 
 const props = defineProps({
   columns: {
@@ -57,7 +58,7 @@ function sort(column) {
 </script>
 
 <template>
-  <div class="overflow-x-auto">
+  <div class="overflow-x-auto" :aria-busy="loading">
     <table class="table-base">
       <thead class="table-head">
         <tr>
@@ -87,14 +88,7 @@ function sort(column) {
 
       <tbody class="divide-y divide-slate-100 bg-white">
         <template v-if="loading">
-          <tr v-for="rowIndex in loadingRows" :key="`skeleton-${rowIndex}`" class="table-row">
-            <td v-for="column in columns" :key="column.key" class="table-td">
-              <div
-                class="h-4 animate-pulse rounded bg-slate-100"
-                :style="{ width: `${Math.min(24, 10 + rowIndex * 2) * 4}px` }"
-              />
-            </td>
-          </tr>
+          <SkeletonTable :columns="columns" :rows="loadingRows" />
         </template>
 
         <tr v-else-if="rows.length === 0">

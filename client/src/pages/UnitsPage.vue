@@ -10,6 +10,8 @@ import StatusBadge from '../components/StatusBadge.vue'
 import AppModal from '../components/AppModal.vue'
 import ConfirmationDialog from '../components/ConfirmationDialog.vue'
 import FormField from '../components/FormField.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 import ErrorState from '../components/ErrorState.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { unitService } from '../services/units'
@@ -22,7 +24,7 @@ const toast = useToast()
 const columns = [
   { key: 'name', label: 'Nama Satuan' },
   { key: 'abbreviation', label: 'Singkatan', align: 'center' },
-  { key: 'products_count', label: 'Jumlah Produk', align: 'center' },
+  { key: 'products_count', label: 'Jumlah Barang', align: 'center' },
   { key: 'is_active', label: 'Status' },
   { key: 'created_at', label: 'Dibuat' },
   { key: 'actions', label: 'Aksi', align: 'right' },
@@ -223,25 +225,29 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
 
 <template>
   <div>
-    <PageHeader title="Satuan" description="Kelola satuan pengukuran yang digunakan pada barang.">
+    <PageHeader title="Satuan" description="Kelola satuan barang.">
       <template #actions>
-        <button type="button" class="btn btn-primary btn-sm" @click="openCreate">
+        <button type="button" class="btn btn-primary" @click="openCreate">
           <Plus class="h-4 w-4" aria-hidden="true" />
           Tambah Satuan
         </button>
       </template>
     </PageHeader>
 
-    <div class="mb-4 card p-4">
+    <div class="filter-bar">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div class="min-w-0 flex-1">
-          <SearchInput v-model="filters.search" placeholder="Cari nama atau singkatan satuan..." label="Cari satuan" />
+          <SearchInput
+            v-model="filters.search"
+            placeholder="Cari nama atau singkatan satuan..."
+            label="Cari Satuan"
+          />
         </div>
         <div class="sm:w-52">
           <FilterDropdown v-model="filters.status" :options="statusOptions" label="Status" />
         </div>
         <button v-if="hasFilters" type="button" class="btn btn-ghost btn-sm" @click="resetFilters">
-          <RefreshCw class="h-3.5 w-3.5" aria-hidden="true" />
+          <RefreshCw class="h-4 w-4" aria-hidden="true" />
           Reset
         </button>
       </div>
@@ -257,7 +263,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
           <h2 class="section-title">Daftar Satuan</h2>
           <p class="mt-0.5 text-xs text-slate-500">{{ meta.total }} satuan</p>
         </div>
-        <button type="button" class="btn-icon h-8 w-8" aria-label="Muat ulang satuan" :disabled="loading" @click="loadUnits">
+        <button type="button" class="btn-icon-sm" aria-label="Muat ulang satuan" :disabled="loading" @click="loadUnits">
           <RefreshCw class="h-4 w-4" :class="loading ? 'animate-spin' : ''" aria-hidden="true" />
         </button>
       </div>
@@ -300,12 +306,12 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1">
-            <button type="button" class="btn-icon h-8 w-8" :aria-label="`Edit satuan ${row.name}`" title="Edit" @click="openEdit(row)">
+            <button type="button" class="btn-icon-sm" :aria-label="`Edit satuan ${row.name}`" title="Edit" @click="openEdit(row)">
               <Pencil class="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"
-              class="btn-icon h-8 w-8"
+              class="btn-icon-sm"
               :class="row.is_active ? 'hover:bg-amber-50 hover:text-amber-700' : 'hover:bg-emerald-50 hover:text-emerald-700'"
               :aria-label="row.is_active ? `Nonaktifkan ${row.name}` : `Aktifkan ${row.name}`"
               :title="row.is_active ? 'Nonaktifkan' : 'Aktifkan'"
@@ -316,9 +322,9 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
             </button>
             <button
               type="button"
-              class="btn-icon h-8 w-8 hover:bg-red-50 hover:text-red-700"
+              class="btn-icon-sm hover:bg-red-50 hover:text-red-700"
               :aria-label="`Hapus satuan ${row.name}`"
-              :title="row.products_count > 0 ? 'Tidak dapat dihapus karena masih digunakan produk' : 'Hapus'"
+              :title="row.products_count > 0 ? 'Tidak dapat dihapus karena masih digunakan barang' : 'Hapus'"
               :disabled="row.products_count > 0"
               @click="deleteTarget = row"
             >
@@ -334,10 +340,10 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
             :message="hasFilters ? 'Coba ubah kata kunci atau status filter.' : 'Tambahkan satuan pertama untuk digunakan pada barang.'"
           >
             <template #action>
-              <button v-if="hasFilters" type="button" class="btn btn-secondary btn-sm" @click="resetFilters">
+              <button v-if="hasFilters" type="button" class="btn btn-secondary" @click="resetFilters">
                 Reset Filter
               </button>
-              <button v-else type="button" class="btn btn-primary btn-sm" @click="openCreate">
+              <button v-else type="button" class="btn btn-primary" @click="openCreate">
                 <Plus class="h-4 w-4" aria-hidden="true" />
                 Tambah Satuan
               </button>
@@ -352,7 +358,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
     <AppModal
       v-model="modalOpen"
       :title="editingUnit ? 'Edit Satuan' : 'Tambah Satuan'"
-      description="Gunakan singkatan yang singkat dan mudah dikenali."
+      description="Nama dan singkatan harus unik."
       size="md"
       :closable="!saving"
     >
@@ -382,7 +388,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
           for-id="unit-abbreviation"
           required
           :error="formErrors.abbreviation"
-          hint="Contoh: pcs, set, m, roll. Harus unik."
+          hint="Contoh: pcs, set, m, roll."
         >
           <input
             id="unit-abbreviation"
@@ -395,34 +401,18 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
           />
         </FormField>
 
-        <div class="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
-          <div>
-            <p class="text-sm font-medium text-slate-800">Satuan aktif</p>
-            <p class="mt-0.5 text-xs text-slate-500">
-              Satuan nonaktif tidak dapat dipilih untuk barang baru.
-            </p>
-          </div>
-          <button
-            type="button"
-            role="switch"
-            :aria-checked="form.is_active"
-            aria-label="Ubah status satuan"
-            class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-            :class="form.is_active ? 'bg-emerald-500' : 'bg-slate-300'"
-            @click="form.is_active = !form.is_active"
-          >
-            <span
-              class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-              :class="form.is_active ? 'translate-x-6' : 'translate-x-1'"
-            />
-          </button>
-        </div>
+        <ToggleSwitch
+          v-model="form.is_active"
+          label="Satuan Aktif"
+          description="Satuan nonaktif tidak dapat dipilih untuk barang baru."
+          aria-label="Ubah status satuan"
+        />
       </form>
 
       <template #footer>
         <button type="button" class="btn btn-secondary" :disabled="saving" @click="modalOpen = false">Batal</button>
         <button type="submit" form="unit-form" class="btn btn-primary" :disabled="saving">
-          <span v-if="saving" class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+          <LoadingSpinner v-if="saving" />
           {{ saving ? 'Menyimpan...' : editingUnit ? 'Simpan Perubahan' : 'Tambah Satuan' }}
         </button>
       </template>
@@ -431,7 +421,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
     <ConfirmationDialog
       :model-value="Boolean(deleteTarget)"
       title="Hapus satuan?"
-      :message="`Satuan “${deleteTarget?.name || ''}” akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`"
+      :message="`Satuan “${deleteTarget?.name || ''}” akan dihapus permanen.`"
       confirm-label="Ya, Hapus"
       variant="danger"
       :loading="deleting"

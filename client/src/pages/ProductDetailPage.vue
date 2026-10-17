@@ -16,7 +16,7 @@ import {
 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import StatusBadge from '../components/StatusBadge.vue'
-import LoadingState from '../components/LoadingState.vue'
+import Skeleton from '../components/Skeleton.vue'
 import ErrorState from '../components/ErrorState.vue'
 import EmptyState from '../components/EmptyState.vue'
 import ConfirmationDialog from '../components/ConfirmationDialog.vue'
@@ -116,21 +116,17 @@ onMounted(loadProduct)
   <div>
     <PageHeader
       title="Detail Barang"
-      description="Informasi lengkap barang dan riwayat pergerakan stoknya."
-      :breadcrumbs="[
-        { label: 'Data Barang', to: '/products' },
-        { label: product?.name || 'Detail Barang' },
-      ]"
+      description="Informasi dan riwayat stok barang."
     >
       <template #actions>
-        <RouterLink to="/products" class="btn btn-secondary btn-sm">
+        <RouterLink to="/products" class="btn btn-secondary">
           <ArrowLeft class="h-4 w-4" aria-hidden="true" />
           Kembali
         </RouterLink>
         <template v-if="product">
           <RouterLink
             :to="{ name: 'products.edit', params: { id: product.id } }"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-secondary"
           >
             <Pencil class="h-4 w-4" aria-hidden="true" />
             Edit
@@ -138,7 +134,7 @@ onMounted(loadProduct)
           <button
             v-if="product.is_active"
             type="button"
-            class="btn btn-secondary btn-sm text-amber-700 hover:bg-amber-50"
+            class="btn btn-secondary text-amber-700 hover:bg-amber-50"
             @click="archiveOpen = true"
           >
             <Archive class="h-4 w-4" aria-hidden="true" />
@@ -147,7 +143,7 @@ onMounted(loadProduct)
           <button
             v-else
             type="button"
-            class="btn btn-success btn-sm"
+            class="btn btn-success"
             :disabled="restoring"
             @click="restoreProduct"
           >
@@ -158,8 +154,64 @@ onMounted(loadProduct)
       </template>
     </PageHeader>
 
-    <div v-if="loading" class="card">
-      <LoadingState text="Memuat detail barang..." />
+    <div v-if="loading" class="space-y-6" role="status" aria-label="Memuat detail barang">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="card lg:col-span-2">
+          <div class="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+            <div class="flex-1 space-y-2.5">
+              <Skeleton width="6rem" height="1.1rem" />
+              <Skeleton width="60%" height="1.4rem" />
+              <Skeleton width="40%" height="0.8rem" />
+            </div>
+            <div class="space-y-2 sm:text-right">
+              <Skeleton width="5rem" height="1.2rem" class="rounded-full sm:ml-auto" />
+              <Skeleton width="7rem" height="1.75rem" class="sm:ml-auto" />
+              <Skeleton width="6rem" height="0.65rem" class="sm:ml-auto" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-6 p-5 sm:grid-cols-2 sm:p-6">
+            <div v-for="column in 2" :key="column" class="space-y-5">
+              <div v-for="row in 2" :key="row" class="flex items-start gap-3">
+                <Skeleton width="2.25rem" height="2.25rem" class="rounded-lg" />
+                <div class="flex-1 space-y-2">
+                  <Skeleton width="50%" height="0.65rem" />
+                  <Skeleton width="70%" height="0.9rem" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="card p-5 sm:p-6">
+            <Skeleton width="8rem" height="1rem" />
+            <Skeleton width="90%" height="0.7rem" class="mt-2" />
+            <div class="mt-4 space-y-2">
+              <Skeleton height="2.75rem" class="rounded-lg" />
+              <Skeleton height="2.75rem" class="rounded-lg" />
+            </div>
+          </div>
+          <div class="card p-5 sm:p-6">
+            <Skeleton width="6rem" height="1rem" />
+            <Skeleton width="100%" height="0.7rem" class="mt-3" />
+            <Skeleton width="80%" height="0.7rem" class="mt-2" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
+          <Skeleton width="10rem" height="1rem" />
+        </div>
+        <div class="divide-y divide-slate-100">
+          <div v-for="row in 5" :key="row" class="grid grid-cols-4 gap-4 px-5 py-3.5">
+            <Skeleton height="0.8rem" />
+            <Skeleton height="0.8rem" />
+            <Skeleton height="0.8rem" />
+            <Skeleton height="0.8rem" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-else-if="error" class="card">
@@ -247,7 +299,6 @@ onMounted(loadProduct)
         <div class="space-y-6">
           <section class="card p-5 sm:p-6">
             <h2 class="section-title">Transaksi Cepat</h2>
-            <p class="mt-1 text-sm text-slate-500">Catat pergerakan stok untuk barang ini.</p>
             <div class="mt-4 space-y-2">
               <RouterLink
                 :to="stockInLink()"
@@ -349,7 +400,7 @@ onMounted(loadProduct)
     <ConfirmationDialog
       :model-value="archiveOpen"
       title="Arsipkan barang?"
-      :message="`Barang “${product?.name || ''}” akan diarsipkan. Riwayat transaksi tetap tersimpan dan barang tidak dapat dipilih untuk transaksi baru.`"
+      :message="`Barang “${product?.name || ''}” akan diarsipkan. Riwayat transaksi tetap tersimpan.`"
       confirm-label="Ya, Arsipkan"
       variant="danger"
       :loading="archiveLoading"

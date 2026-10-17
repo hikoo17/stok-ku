@@ -43,9 +43,9 @@ onBeforeUnmount(() => {
         </div>
       </main>
 
-      <footer class="border-t border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
+      <footer class="border-t border-slate-200 bg-white px-4 py-3.5 sm:px-6 lg:px-8">
         <p class="text-center text-xs text-slate-500">
-          Stok Ku &copy; {{ new Date().getFullYear() }} &middot; Aplikasi pengelolaan persediaan barang
+          Stok Ku &copy; {{ new Date().getFullYear() }}
         </p>
       </footer>
     </div>

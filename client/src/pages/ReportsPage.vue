@@ -16,6 +16,7 @@ import DataTable from '../components/DataTable.vue'
 import Pagination from '../components/Pagination.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import ErrorState from '../components/ErrorState.vue'
+import Skeleton from '../components/Skeleton.vue'
 import { reportService } from '../services/reports'
 import { categoryService } from '../services/categories'
 import { productService } from '../services/products'
@@ -409,16 +410,16 @@ onBeforeUnmount(() => {
   <div>
     <PageHeader
       title="Laporan"
-      description="Pantau stok terkini, pergerakan barang, dan barang yang perlu ditambah."
+      description="Laporan persediaan barang."
     >
       <template #actions>
-        <button type="button" class="btn btn-secondary btn-sm" :disabled="optionsLoading" @click="refreshActive">
+        <button type="button" class="btn btn-secondary" :disabled="optionsLoading" @click="refreshActive">
           <RefreshCw class="h-4 w-4" aria-hidden="true" />
           Muat Ulang
         </button>
         <button
           type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary"
           :disabled="
             optionsLoading ||
             (activeTab === 'inventory' && inventory.exporting) ||
@@ -441,7 +442,7 @@ onBeforeUnmount(() => {
           type="button"
           role="tab"
           :aria-selected="activeTab === tab.id"
-          class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:flex-none"
+          class="flex h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 sm:flex-none"
           :class="
             activeTab === tab.id
               ? 'bg-indigo-600 text-white shadow-sm'
@@ -459,13 +460,13 @@ onBeforeUnmount(() => {
 
     <!-- Current inventory report -->
     <div v-show="activeTab === 'inventory'" role="tabpanel">
-      <div class="mb-4 card p-4">
+      <div class="filter-bar">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div class="min-w-0 flex-1">
             <SearchInput
               :model-value="inventory.filters.search"
               placeholder="Cari kode atau nama barang..."
-              label="Cari barang"
+              label="Cari Barang"
               @update:model-value="
                 (value) => {
                   inventory.filters.search = value
@@ -521,8 +522,8 @@ onBeforeUnmount(() => {
             :disabled="inventory.exporting || inventory.loading"
             @click="exportActive"
           >
-            <Download class="h-3.5 w-3.5" aria-hidden="true" />
-            {{ inventory.exporting ? 'Mengunduh...' : 'Ekspor CSV' }}
+            <Download class="h-4 w-4" aria-hidden="true" />
+            {{ inventory.exporting ? 'Mengunduh...' : 'Unduh CSV' }}
           </button>
         </div>
 
@@ -534,7 +535,7 @@ onBeforeUnmount(() => {
             :rows="inventory.rows"
             :loading="inventory.loading"
             empty-title="Tidak ada data stok"
-            empty-message="Data barang aktif akan tampil pada laporan ini."
+            empty-message="Belum ada barang aktif yang sesuai filter."
           >
             <template #cell-sku="{ row }">
               <span class="font-mono text-xs font-medium text-slate-600">{{ row.sku }}</span>
@@ -570,13 +571,13 @@ onBeforeUnmount(() => {
 
     <!-- Stock movement report -->
     <div v-show="activeTab === 'movements'" role="tabpanel">
-      <div class="mb-4 card p-4">
+      <div class="filter-bar">
         <div class="grid grid-cols-1 gap-3 lg:grid-cols-12">
           <div class="lg:col-span-4">
             <SearchInput
               :model-value="movements.filters.search"
               placeholder="Cari referensi atau barang..."
-              label="Cari pergerakan"
+              label="Cari Pergerakan"
               @update:model-value="
                 (value) => {
                   movements.filters.search = value
@@ -653,32 +654,41 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="card p-5">
-          <p class="text-sm font-medium text-slate-500">Total Barang Masuk</p>
-          <p class="mt-1 text-2xl font-semibold text-emerald-600">
-            {{ formatNumber(movements.summary?.total_in || 0) }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500">Dalam periode terpilih</p>
-        </div>
-        <div class="card p-5">
-          <p class="text-sm font-medium text-slate-500">Total Barang Keluar</p>
-          <p class="mt-1 text-2xl font-semibold text-sky-600">
-            {{ formatNumber(movements.summary?.total_out || 0) }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500">Dalam periode terpilih</p>
-        </div>
-        <div class="card p-5">
-          <p class="text-sm font-medium text-slate-500">Jumlah Transaksi</p>
-          <p class="mt-1 text-2xl font-semibold text-slate-900">
-            {{ formatNumber(movements.summary?.total_transactions || 0) }}
-          </p>
-          <p class="mt-1 text-xs text-slate-500">
-            <template v-if="movements.summary">
-              {{ formatDate(movements.summary.date_from) }} – {{ formatDate(movements.summary.date_to) }}
-            </template>
-            <template v-else>Periode terpilih</template>
-          </p>
-        </div>
+        <template v-if="movements.loading && !movements.loaded">
+          <div v-for="index in 3" :key="index" class="card p-5" aria-hidden="true">
+            <Skeleton width="45%" height="0.75rem" />
+            <Skeleton width="30%" height="1.5rem" class="mt-2" />
+            <Skeleton width="60%" height="0.65rem" class="mt-2" />
+          </div>
+        </template>
+        <template v-else>
+          <div class="card p-5">
+            <p class="text-sm font-medium text-slate-500">Total Barang Masuk</p>
+            <p class="mt-1 text-2xl font-semibold text-emerald-700">
+              {{ formatNumber(movements.summary?.total_in || 0) }}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">Dalam periode terpilih</p>
+          </div>
+          <div class="card p-5">
+            <p class="text-sm font-medium text-slate-500">Total Barang Keluar</p>
+            <p class="mt-1 text-2xl font-semibold text-sky-700">
+              {{ formatNumber(movements.summary?.total_out || 0) }}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">Dalam periode terpilih</p>
+          </div>
+          <div class="card p-5">
+            <p class="text-sm font-medium text-slate-500">Jumlah Transaksi</p>
+            <p class="mt-1 text-2xl font-semibold text-slate-900">
+              {{ formatNumber(movements.summary?.total_transactions || 0) }}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">
+              <template v-if="movements.summary">
+                {{ formatDate(movements.summary.date_from) }} – {{ formatDate(movements.summary.date_to) }}
+              </template>
+              <template v-else>Periode terpilih</template>
+            </p>
+          </div>
+        </template>
       </div>
 
       <div class="card overflow-hidden">
@@ -696,8 +706,8 @@ onBeforeUnmount(() => {
             :disabled="movements.exporting || movements.loading"
             @click="exportActive"
           >
-            <Download class="h-3.5 w-3.5" aria-hidden="true" />
-            {{ movements.exporting ? 'Mengunduh...' : 'Ekspor CSV' }}
+            <Download class="h-4 w-4" aria-hidden="true" />
+            {{ movements.exporting ? 'Mengunduh...' : 'Unduh CSV' }}
           </button>
         </div>
 
@@ -727,7 +737,7 @@ onBeforeUnmount(() => {
               <StatusBadge :status="row.transaction_type" />
             </template>
             <template #cell-quantity="{ row }">
-              <span class="font-semibold" :class="row.transaction_type === 'in' ? 'text-emerald-600' : 'text-sky-600'">
+              <span class="font-semibold" :class="row.transaction_type === 'in' ? 'text-emerald-700' : 'text-sky-700'">
                 {{ row.transaction_type === 'in' ? '+' : '-' }}{{ formatNumber(row.quantity) }}
                 <span class="text-xs font-normal text-slate-500">{{ row.product?.unit?.abbreviation }}</span>
               </span>
@@ -758,13 +768,13 @@ onBeforeUnmount(() => {
 
     <!-- Low stock report -->
     <div v-show="activeTab === 'low-stock'" role="tabpanel">
-      <div class="mb-4 card p-4">
+      <div class="filter-bar">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div class="min-w-0 flex-1">
             <SearchInput
               :model-value="lowStock.filters.search"
               placeholder="Cari kode atau nama barang..."
-              label="Cari barang"
+              label="Cari Barang"
               @update:model-value="
                 (value) => {
                   lowStock.filters.search = value
@@ -793,21 +803,30 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="card p-5">
-          <p class="text-sm font-medium text-slate-500">Perlu Perhatian</p>
-          <p class="mt-1 text-2xl font-semibold text-slate-900">{{ formatNumber(lowStock.summary?.total || 0) }}</p>
-          <p class="mt-1 text-xs text-slate-500">Barang pada atau di bawah batas minimum</p>
-        </div>
-        <div class="card p-5">
-          <p class="text-sm font-medium text-slate-500">Stok Menipis</p>
-          <p class="mt-1 text-2xl font-semibold text-amber-600">{{ formatNumber(lowStock.summary?.low_stock || 0) }}</p>
-          <p class="mt-1 text-xs text-slate-500">Stok masih tersedia namun menipis</p>
-        </div>
-        <div class="card p-5">
-          <p class="text-sm font-medium text-slate-500">Stok Habis</p>
-          <p class="mt-1 text-2xl font-semibold text-red-600">{{ formatNumber(lowStock.summary?.out_of_stock || 0) }}</p>
-          <p class="mt-1 text-xs text-slate-500">Stok nol dan perlu segera diisi</p>
-        </div>
+        <template v-if="lowStock.loading && !lowStock.loaded">
+          <div v-for="index in 3" :key="index" class="card p-5" aria-hidden="true">
+            <Skeleton width="45%" height="0.75rem" />
+            <Skeleton width="30%" height="1.5rem" class="mt-2" />
+            <Skeleton width="60%" height="0.65rem" class="mt-2" />
+          </div>
+        </template>
+        <template v-else>
+          <div class="card p-5">
+            <p class="text-sm font-medium text-slate-500">Perlu Perhatian</p>
+            <p class="mt-1 text-2xl font-semibold text-slate-900">{{ formatNumber(lowStock.summary?.total || 0) }}</p>
+            <p class="mt-1 text-xs text-slate-500">Pada atau di bawah batas minimum</p>
+          </div>
+          <div class="card p-5">
+            <p class="text-sm font-medium text-slate-500">Stok Menipis</p>
+            <p class="mt-1 text-2xl font-semibold text-amber-700">{{ formatNumber(lowStock.summary?.low_stock || 0) }}</p>
+            <p class="mt-1 text-xs text-slate-500">Masih tersedia namun menipis</p>
+          </div>
+          <div class="card p-5">
+            <p class="text-sm font-medium text-slate-500">Stok Habis</p>
+            <p class="mt-1 text-2xl font-semibold text-red-700">{{ formatNumber(lowStock.summary?.out_of_stock || 0) }}</p>
+            <p class="mt-1 text-xs text-slate-500">Stok nol</p>
+          </div>
+        </template>
       </div>
 
       <div class="card overflow-hidden">
@@ -825,8 +844,8 @@ onBeforeUnmount(() => {
             :disabled="lowStock.exporting || lowStock.loading"
             @click="exportActive"
           >
-            <Download class="h-3.5 w-3.5" aria-hidden="true" />
-            {{ lowStock.exporting ? 'Mengunduh...' : 'Ekspor CSV' }}
+            <Download class="h-4 w-4" aria-hidden="true" />
+            {{ lowStock.exporting ? 'Mengunduh...' : 'Unduh CSV' }}
           </button>
         </div>
 
@@ -838,7 +857,7 @@ onBeforeUnmount(() => {
             :rows="lowStock.rows"
             :loading="lowStock.loading"
             empty-title="Tidak ada stok menipis"
-            empty-message="Semua barang berada di atas batas stok minimum."
+            empty-message="Semua barang berada di atas batas minimum."
           >
             <template #cell-sku="{ row }">
               <span class="font-mono text-xs font-medium text-slate-600">{{ row.sku }}</span>
@@ -853,7 +872,7 @@ onBeforeUnmount(() => {
               </span>
             </template>
             <template #cell-current_stock="{ row }">
-              <span class="font-semibold" :class="row.current_stock <= 0 ? 'text-red-600' : 'text-amber-600'">
+              <span class="font-semibold" :class="row.current_stock <= 0 ? 'text-red-700' : 'text-amber-700'">
                 {{ formatNumber(row.current_stock) }}
               </span>
             </template>

@@ -45,7 +45,7 @@ const styles = computed(() => tones[props.tone] || tones.indigo)
   <component
     :is="to ? RouterLink : 'div'"
     :to="to || undefined"
-    class="card group flex items-start gap-4 p-5 transition-colors"
+    class="card group flex h-full min-h-[112px] items-start gap-4 p-5 transition-colors"
     :class="[to ? styles.ring : '', to ? 'cursor-pointer' : '']"
   >
     <div
@@ -59,7 +59,7 @@ const styles = computed(() => tones[props.tone] || tones.indigo)
     <div class="min-w-0 flex-1">
       <p class="text-sm font-medium text-slate-500">{{ label }}</p>
       <p class="mt-1 text-2xl font-semibold tracking-tight text-slate-900">{{ value }}</p>
-      <p v-if="hint" class="mt-1 text-xs text-slate-500">{{ hint }}</p>
+      <p v-if="hint" class="mt-1 text-xs leading-5 text-slate-500">{{ hint }}</p>
     </div>
 
     <ArrowUpRight

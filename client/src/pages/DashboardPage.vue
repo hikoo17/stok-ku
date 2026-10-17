@@ -6,7 +6,6 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Boxes,
-  CircleAlert,
   Package,
   PackageMinus,
   PackagePlus,
@@ -27,6 +26,8 @@ import StatCard from '../components/StatCard.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import ErrorState from '../components/ErrorState.vue'
 import EmptyState from '../components/EmptyState.vue'
+import Skeleton from '../components/Skeleton.vue'
+import SkeletonStatCard from '../components/SkeletonStatCard.vue'
 import { dashboardService } from '../services/dashboard'
 import { formatDate, formatNumber, formatShortDate } from '../composables/useFormat'
 import { getErrorMessage } from '../composables/useApiError'
@@ -36,6 +37,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 const loading = ref(true)
 const error = ref('')
 const dashboard = ref(null)
+const chartSkeletonHeights = ['44%', '72%', '38%', '88%', '60%', '46%', '80%']
 
 const summary = computed(
   () =>
@@ -138,18 +140,18 @@ onMounted(loadDashboard)
   <div>
     <PageHeader
       title="Dashboard"
-      :description="`Ringkasan kondisi persediaan per ${formatDate(new Date())}.`"
+      :description="`Ringkasan persediaan per ${formatDate(new Date())}.`"
     >
       <template #actions>
-        <RouterLink to="/products/create" class="btn btn-primary btn-sm">
+        <RouterLink to="/products/create" class="btn btn-primary">
           <Plus class="h-4 w-4" aria-hidden="true" />
           Tambah Barang
         </RouterLink>
-        <RouterLink to="/stock-in" class="btn btn-secondary btn-sm">
+        <RouterLink to="/stock-in" class="btn btn-secondary">
           <ArrowDownToLine class="h-4 w-4" aria-hidden="true" />
           Barang Masuk
         </RouterLink>
-        <RouterLink to="/stock-out" class="btn btn-secondary btn-sm">
+        <RouterLink to="/stock-out" class="btn btn-secondary">
           <ArrowUpFromLine class="h-4 w-4" aria-hidden="true" />
           Barang Keluar
         </RouterLink>
@@ -158,11 +160,59 @@ onMounted(loadDashboard)
 
     <div v-if="loading" class="space-y-6" role="status" aria-label="Memuat dashboard">
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div v-for="index in 4" :key="index" class="card h-[104px] animate-pulse bg-slate-100/60" />
+        <SkeletonStatCard v-for="index in 4" :key="index" />
       </div>
+
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div class="card h-96 animate-pulse bg-slate-100/60 lg:col-span-2" />
-        <div class="card h-96 animate-pulse bg-slate-100/60" />
+        <div class="card lg:col-span-2">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <Skeleton width="9rem" height="1rem" />
+            <Skeleton width="13rem" height="0.7rem" class="mt-2" />
+          </div>
+          <div class="flex h-72 items-end gap-3 px-6 py-6 sm:h-80">
+            <Skeleton
+              v-for="(height, index) in chartSkeletonHeights"
+              :key="index"
+              width="100%"
+              :height="height"
+              class="flex-1 rounded-t-md"
+            />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="border-b border-slate-100 px-5 py-4">
+            <Skeleton width="8rem" height="1rem" />
+            <Skeleton width="6rem" height="0.7rem" class="mt-2" />
+          </div>
+          <div class="space-y-5 p-5">
+            <div v-for="index in 4" :key="index" class="flex items-start justify-between gap-4">
+              <div class="flex-1 space-y-2">
+                <Skeleton width="80%" height="0.85rem" />
+                <Skeleton width="40%" height="0.7rem" />
+              </div>
+              <Skeleton width="4.5rem" height="1.25rem" class="rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div v-for="index in 2" :key="index" class="card">
+          <div class="border-b border-slate-100 px-5 py-4">
+            <Skeleton width="10rem" height="1rem" />
+          </div>
+          <div class="divide-y divide-slate-100">
+            <div v-for="row in 5" :key="row" class="flex items-center gap-3 px-5 py-3.5">
+              <Skeleton width="2.25rem" height="2.25rem" circle />
+              <div class="flex-1 space-y-2">
+                <Skeleton width="65%" height="0.8rem" />
+                <Skeleton width="45%" height="0.65rem" />
+              </div>
+              <Skeleton width="3.5rem" height="0.8rem" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -177,7 +227,7 @@ onMounted(loadDashboard)
           :value="formatNumber(summary.total_products)"
           :icon="Package"
           tone="indigo"
-          hint="Barang yang dapat ditransaksikan"
+          hint="Dapat ditransaksikan"
           to="/products"
         />
         <StatCard
@@ -185,14 +235,14 @@ onMounted(loadDashboard)
           :value="formatNumber(summary.total_stock)"
           :icon="Boxes"
           tone="slate"
-          hint="Jumlah kuantitas seluruh barang aktif tanpa konversi satuan"
+          hint="Tanpa konversi satuan"
         />
         <StatCard
           label="Stok Menipis"
           :value="formatNumber(summary.low_stock)"
           :icon="AlertTriangle"
           tone="amber"
-          hint="Stok di bawah atau sama dengan batas"
+          hint="Pada atau di bawah batas minimum"
           to="/reports?tab=low-stock"
         />
         <StatCard
@@ -200,7 +250,7 @@ onMounted(loadDashboard)
           :value="formatNumber(summary.out_of_stock)"
           :icon="XCircle"
           tone="red"
-          hint="Barang dengan stok nol"
+          hint="Tidak memiliki stok"
           to="/reports?tab=low-stock"
         />
       </div>
@@ -210,7 +260,7 @@ onMounted(loadDashboard)
           <div class="flex flex-col gap-1 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <h2 class="section-title">Pergerakan Stok</h2>
-              <p class="mt-0.5 text-xs text-slate-500">Barang masuk dan keluar dalam 7 hari terakhir.</p>
+              <p class="mt-0.5 text-xs text-slate-500">Barang masuk dan keluar 7 hari terakhir.</p>
             </div>
             <RouterLink to="/reports?tab=movements" class="link text-xs">Lihat laporan</RouterLink>
           </div>
@@ -359,21 +409,6 @@ onMounted(loadDashboard)
             </li>
           </ul>
         </div>
-      </div>
-
-      <div class="card flex flex-col gap-3 border-dashed bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-start gap-3">
-          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-            <CircleAlert class="h-4 w-4" aria-hidden="true" />
-          </span>
-          <div>
-            <p class="text-sm font-medium text-slate-800">Stok selalu dihitung dari transaksi</p>
-            <p class="text-xs text-slate-500">
-              Gunakan menu barang masuk dan barang keluar agar riwayat stok tetap akurat.
-            </p>
-          </div>
-        </div>
-        <RouterLink to="/products" class="btn btn-secondary btn-sm shrink-0">Kelola Barang</RouterLink>
       </div>
     </div>
   </div>

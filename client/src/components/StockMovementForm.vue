@@ -13,7 +13,8 @@ import {
 } from 'lucide-vue-next'
 import PageHeader from './PageHeader.vue'
 import FormField from './FormField.vue'
-import LoadingState from './LoadingState.vue'
+import Skeleton from './Skeleton.vue'
+import LoadingSpinner from './LoadingSpinner.vue'
 import ErrorState from './ErrorState.vue'
 import EmptyState from './EmptyState.vue'
 import StatusBadge from './StatusBadge.vue'
@@ -44,7 +45,7 @@ const config = computed(() =>
   isIncoming.value
     ? {
         title: 'Barang Masuk',
-        description: 'Catat penerimaan barang dan perbarui stok secara otomatis.',
+        description: 'Catat penerimaan barang.',
         priceLabel: 'Harga Beli',
         descriptionLabel: 'Pemasok / Sumber',
         descriptionPlaceholder: 'Contoh: PT Sinar Parts',
@@ -55,7 +56,7 @@ const config = computed(() =>
       }
     : {
         title: 'Barang Keluar',
-        description: 'Catat pengeluaran barang dan kurangi stok secara otomatis.',
+        description: 'Catat pengeluaran barang.',
         priceLabel: 'Harga Jual',
         descriptionLabel: 'Tujuan / Penerima',
         descriptionPlaceholder: 'Contoh: Bengkel Jaya Motor',
@@ -256,13 +257,13 @@ onMounted(loadProducts)
   <div>
     <PageHeader :title="config.title" :description="config.description">
       <template #actions>
-        <RouterLink to="/history" class="btn btn-secondary btn-sm">
+        <RouterLink to="/history" class="btn btn-secondary">
           <History class="h-4 w-4" aria-hidden="true" />
           Riwayat Stok
         </RouterLink>
         <RouterLink
           :to="isIncoming ? '/stock-out' : '/stock-in'"
-          class="btn btn-secondary btn-sm"
+          class="btn btn-secondary"
         >
           <component :is="isIncoming ? ArrowUpFromLine : ArrowDownToLine" class="h-4 w-4" aria-hidden="true" />
           {{ isIncoming ? 'Barang Keluar' : 'Barang Masuk' }}
@@ -270,8 +271,36 @@ onMounted(loadProducts)
       </template>
     </PageHeader>
 
-    <div v-if="loading" class="card">
-      <LoadingState text="Memuat data barang..." />
+    <div v-if="loading" class="grid grid-cols-1 gap-6 lg:grid-cols-3" role="status" aria-label="Memuat data barang">
+      <div class="space-y-6 lg:col-span-2">
+        <div class="card">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <Skeleton width="12rem" height="1rem" />
+          </div>
+          <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
+            <div v-for="field in 7" :key="field" class="space-y-2" :class="field === 1 || field === 6 ? 'sm:col-span-2' : ''">
+              <Skeleton width="30%" height="0.7rem" />
+              <Skeleton :height="field === 6 ? '5.5rem' : '2.5rem'" class="rounded-lg" />
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 border-t border-slate-100 px-5 py-4 sm:px-6">
+            <Skeleton width="5rem" height="2.5rem" class="rounded-lg" />
+            <Skeleton width="9rem" height="2.5rem" class="rounded-lg" />
+          </div>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div class="card p-5 sm:p-6">
+          <Skeleton width="6rem" height="1rem" />
+          <Skeleton width="80%" height="0.7rem" class="mt-2" />
+          <div class="mt-5 space-y-4">
+            <div v-for="row in 4" :key="row" class="flex items-center justify-between gap-4">
+              <Skeleton width="40%" height="0.75rem" />
+              <Skeleton width="30%" height="0.9rem" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-else-if="loadError" class="card">
@@ -285,7 +314,7 @@ onMounted(loadProducts)
         message="Tambahkan barang terlebih dahulu sebelum mencatat transaksi stok."
       >
         <template #action>
-          <RouterLink to="/products/create" class="btn btn-primary btn-sm">Tambah Barang</RouterLink>
+          <RouterLink to="/products/create" class="btn btn-primary">Tambah Barang</RouterLink>
         </template>
       </EmptyState>
     </div>
@@ -310,7 +339,7 @@ onMounted(loadProducts)
           </div>
           <RouterLink
             :to="{ name: 'history', query: { search: lastTransaction.transaction_number } }"
-            class="btn btn-secondary btn-sm shrink-0 self-start sm:self-auto"
+            class="btn btn-secondary shrink-0 self-start sm:self-auto"
           >
             Lihat Riwayat
           </RouterLink>
@@ -334,8 +363,7 @@ onMounted(loadProducts)
                 <component :is="config.icon" class="h-5 w-5" aria-hidden="true" />
               </span>
               <div>
-                <h2 class="section-title">Form {{ config.title }}</h2>
-                <p class="text-xs text-slate-500">Semua kolom bertanda * wajib diisi.</p>
+                <h2 class="section-title">Informasi Transaksi</h2>
               </div>
             </div>
           </div>
@@ -369,7 +397,7 @@ onMounted(loadProducts)
               for-id="movement-quantity"
               required
               :error="errors.quantity"
-              :hint="isIncoming ? 'Masukkan jumlah barang yang diterima.' : `Stok tersedia: ${formatNumber(stockBefore)} ${selectedProduct?.unit?.abbreviation || ''}.`"
+              :hint="isIncoming ? '' : `Stok tersedia: ${formatNumber(stockBefore)} ${selectedProduct?.unit?.abbreviation || ''}.`"
             >
               <div class="relative">
                 <input
@@ -396,8 +424,8 @@ onMounted(loadProducts)
               :error="errors.unit_price"
               :hint="
                 isIncoming
-                  ? 'Otomatis dari harga beli barang, dapat diubah untuk transaksi ini.'
-                  : 'Otomatis dari harga jual barang, dapat diubah untuk transaksi ini.'
+                  ? 'Nilai awal dari harga beli. Dapat diubah.'
+                  : 'Nilai awal dari harga jual. Dapat diubah.'
               "
             >
               <div class="relative">
@@ -437,7 +465,6 @@ onMounted(loadProducts)
               :label="config.descriptionLabel"
               for-id="movement-description"
               :error="errors.description"
-              hint="Opsional, berupa teks bebas."
             >
               <input
                 id="movement-description"
@@ -451,7 +478,7 @@ onMounted(loadProducts)
             </FormField>
 
             <div class="sm:col-span-2">
-              <FormField label="Catatan" for-id="movement-notes" :error="errors.notes" hint="Opsional. Maksimal 1.000 karakter.">
+              <FormField label="Catatan" for-id="movement-notes" :error="errors.notes">
                 <textarea
                   id="movement-notes"
                   v-model="form.notes"
@@ -475,11 +502,7 @@ onMounted(loadProducts)
               :class="isIncoming ? 'btn-success' : 'btn-primary'"
               :disabled="submitting"
             >
-              <span
-                v-if="submitting"
-                class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                aria-hidden="true"
-              />
+              <LoadingSpinner v-if="submitting" />
               <Save v-else class="h-4 w-4" aria-hidden="true" />
               {{ submitting ? 'Menyimpan...' : config.submitLabel }}
             </button>
@@ -490,7 +513,7 @@ onMounted(loadProducts)
       <div class="space-y-6">
         <section class="card p-5 sm:p-6 lg:sticky lg:top-24">
           <h2 class="section-title">Ringkasan</h2>
-          <p class="mt-1 text-sm text-slate-500">Perkiraan perubahan stok sebelum disimpan.</p>
+          <p class="mt-1 text-sm text-slate-500">Perkiraan perubahan stok.</p>
 
           <div v-if="selectedProduct" class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ selectedProduct.sku }}</p>
@@ -505,22 +528,22 @@ onMounted(loadProducts)
             </div>
           </div>
 
-          <dl class="mt-5 space-y-3 text-sm">
+          <dl v-if="selectedProduct" class="mt-5 space-y-3 text-sm">
             <div class="flex items-center justify-between gap-4">
-              <dt class="text-slate-500">Stok saat ini</dt>
+              <dt class="text-slate-500">Stok Saat Ini</dt>
               <dd class="font-medium text-slate-900">
                 {{ formatNumber(stockBefore) }}
                 <span class="text-xs font-normal text-slate-500">{{ selectedProduct?.unit?.abbreviation }}</span>
               </dd>
             </div>
             <div class="flex items-center justify-between gap-4">
-              <dt class="text-slate-500">{{ isIncoming ? 'Jumlah masuk' : 'Jumlah keluar' }}</dt>
-              <dd class="font-medium" :class="isIncoming ? 'text-emerald-600' : 'text-sky-600'">
+              <dt class="text-slate-500">{{ isIncoming ? 'Jumlah Masuk' : 'Jumlah Keluar' }}</dt>
+              <dd class="font-medium" :class="isIncoming ? 'text-emerald-700' : 'text-sky-700'">
                 {{ isIncoming ? '+' : '-' }}{{ formatNumber(quantityValue) }}
               </dd>
             </div>
             <div class="flex items-center justify-between gap-4 border-t border-slate-200 pt-3">
-              <dt class="font-medium text-slate-700">Stok setelah</dt>
+              <dt class="font-medium text-slate-700">Stok Setelah</dt>
               <dd class="text-base font-semibold" :class="stockAfter < 0 ? 'text-red-600' : 'text-slate-900'">
                 {{ formatNumber(stockAfter) }}
                 <span class="text-xs font-normal text-slate-500">{{ selectedProduct?.unit?.abbreviation }}</span>
@@ -530,26 +553,26 @@ onMounted(loadProducts)
 
           <p v-if="isInsufficient" class="mt-3 flex items-start gap-1.5 text-xs font-medium text-red-600" role="alert">
             <TriangleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            Jumlah keluar melebihi stok yang tersedia.
+            <span>Jumlah keluar melebihi stok yang tersedia.</span>
           </p>
 
-          <div class="mt-5 space-y-3 border-t border-slate-200 pt-4 text-sm">
+          <div v-if="selectedProduct" class="mt-5 space-y-3 border-t border-slate-200 pt-4 text-sm">
             <div class="flex items-center justify-between gap-4">
               <span class="text-slate-500">{{ config.priceLabel }}</span>
               <span class="font-medium text-slate-900">{{ formatCurrency(unitPriceValue) }}</span>
             </div>
             <div class="flex items-center justify-between gap-4">
-              <span class="text-slate-500">Total nilai</span>
+              <span class="text-slate-500">Total Nilai</span>
               <span class="font-semibold text-slate-900">{{ formatCurrency(totalValue) }}</span>
             </div>
           </div>
+          <p v-else class="mt-4 rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500">
+            Pilih barang untuk melihat ringkasan.
+          </p>
 
           <div class="mt-5 flex items-start gap-2 rounded-lg bg-indigo-50/70 p-3 text-xs leading-5 text-indigo-800">
             <Info class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <p>
-              Stok dihitung ulang di server saat disimpan. Transaksi tidak dapat diproses dua kali
-              meskipun tombol ditekan berulang.
-            </p>
+            <p>Stok diperbarui otomatis saat transaksi disimpan.</p>
           </div>
         </section>
 

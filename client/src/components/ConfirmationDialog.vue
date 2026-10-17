@@ -1,6 +1,7 @@
 <script setup>
 import { TriangleAlert } from 'lucide-vue-next'
 import AppModal from './AppModal.vue'
+import LoadingSpinner from './LoadingSpinner.vue'
 
 defineProps({
   modelValue: {
@@ -72,11 +73,7 @@ const emit = defineEmits(['update:modelValue', 'confirm'])
         :disabled="loading"
         @click="emit('confirm')"
       >
-        <span
-          v-if="loading"
-          class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-          aria-hidden="true"
-        />
+        <LoadingSpinner v-if="loading" />
         {{ confirmLabel }}
       </button>
     </template>

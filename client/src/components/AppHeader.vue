@@ -1,20 +1,12 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { ChevronDown, LogOut, Menu, User } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { useToast } from '../composables/useToast'
 
-defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-  },
-})
-
 const emit = defineEmits(['open-sidebar'])
 
-const route = useRoute()
 const router = useRouter()
 const { state, logout } = useAuth()
 const toast = useToast()
@@ -32,8 +24,6 @@ const initials = computed(() => {
     .map((part) => part[0]?.toUpperCase())
     .join('')
 })
-
-const pageTitle = computed(() => route.meta.title || 'Dashboard')
 
 async function handleLogout() {
   if (loggingOut.value) {
@@ -79,8 +69,8 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutsideCli
       </button>
 
       <div class="min-w-0">
-        <p class="truncate text-sm font-semibold text-slate-900 sm:text-base">{{ pageTitle }}</p>
-        <p class="hidden text-xs text-slate-500 sm:block">Kelola persediaan barang dengan mudah</p>
+        <p class="truncate text-sm font-semibold text-slate-900">Stok Ku</p>
+        <p class="hidden text-xs text-slate-500 sm:block">Manajemen Persediaan</p>
       </div>
     </div>
 

@@ -68,7 +68,7 @@ function goTo(page) {
     <nav v-if="lastPage > 1" class="flex items-center gap-1" aria-label="Navigasi halaman">
       <button
         type="button"
-        class="btn-icon h-8 w-8"
+        class="btn-icon-sm"
         :disabled="currentPage === 1"
         aria-label="Halaman sebelumnya"
         @click="goTo(currentPage - 1)"
@@ -81,7 +81,7 @@ function goTo(page) {
         <button
           v-else
           type="button"
-          class="inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          class="inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-2 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           :class="
             page === currentPage
               ? 'bg-indigo-600 text-white'
@@ -96,7 +96,7 @@ function goTo(page) {
 
       <button
         type="button"
-        class="btn-icon h-8 w-8"
+        class="btn-icon-sm"
         :disabled="currentPage === lastPage"
         aria-label="Halaman berikutnya"
         @click="goTo(currentPage + 1)"

@@ -5,6 +5,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   ChevronLeft,
+  ChevronRight,
   FileText,
   History,
   LayoutDashboard,
@@ -69,6 +70,18 @@ function isActive(item) {
     class="sticky top-0 hidden h-screen shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-200 lg:flex"
     :class="collapsed ? 'w-20' : 'w-64'"
   >
+    <button
+      type="button"
+      class="absolute -right-3 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+      :aria-label="collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'"
+      :title="collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'"
+      :aria-expanded="!collapsed"
+      @click="emit('toggle-collapse')"
+    >
+      <ChevronLeft v-if="!collapsed" class="h-3.5 w-3.5" aria-hidden="true" />
+      <ChevronRight v-else class="h-3.5 w-3.5" aria-hidden="true" />
+    </button>
+
     <div class="flex h-16 items-center gap-3 border-b border-slate-100 px-4" :class="collapsed ? 'justify-center' : 'px-5'">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
         <Package class="h-5 w-5" aria-hidden="true" />
@@ -92,7 +105,7 @@ function isActive(item) {
             v-for="item in group.items"
             :key="item.to"
             :to="item.to"
-            class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            class="group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             :class="[
               isActive(item)
                 ? 'bg-indigo-50 text-indigo-700'
@@ -113,24 +126,6 @@ function isActive(item) {
         </div>
       </div>
     </nav>
-
-    <div class="border-t border-slate-100 p-3">
-      <button
-        type="button"
-        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        :class="collapsed ? 'justify-center' : ''"
-        :aria-label="collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'"
-        @click="emit('toggle-collapse')"
-      >
-        <ChevronLeft
-          class="h-5 w-5 shrink-0 transition-transform"
-          :class="collapsed ? 'rotate-180' : ''"
-          aria-hidden="true"
-        />
-        <span v-if="!collapsed">Ciutkan</span>
-      </button>
-      <p v-if="!collapsed" class="px-3 pt-2 text-[11px] text-slate-500">Stok Ku v1.0</p>
-    </div>
   </aside>
 
   <!-- Mobile drawer -->
@@ -161,7 +156,7 @@ function isActive(item) {
               <p class="text-[11px] text-slate-500">Manajemen Persediaan</p>
             </div>
           </div>
-          <button type="button" class="btn-icon h-8 w-8" aria-label="Tutup navigasi" @click="emit('close')">
+          <button type="button" class="btn-icon" aria-label="Tutup navigasi" @click="emit('close')">
             <X class="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
@@ -176,7 +171,7 @@ function isActive(item) {
                 v-for="item in group.items"
                 :key="item.to"
                 :to="item.to"
-                class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                class="group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 :class="
                   isActive(item)
                     ? 'bg-indigo-50 text-indigo-700'
@@ -195,10 +190,6 @@ function isActive(item) {
             </div>
           </div>
         </nav>
-
-        <div class="border-t border-slate-100 p-4">
-          <p class="text-[11px] text-slate-500">Stok Ku v1.0</p>
-        </div>
       </aside>
     </Transition>
   </Teleport>

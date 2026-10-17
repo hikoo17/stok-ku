@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -27,6 +27,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 const panel = ref(null)
+let previouslyFocused = null
 
 const sizeClasses = {
   sm: 'max-w-md',
@@ -44,8 +45,38 @@ function close() {
 }
 
 function onKeydown(event) {
-  if (event.key === 'Escape' && props.modelValue) {
+  if (!props.modelValue) {
+    return
+  }
+
+  if (event.key === 'Escape') {
     close()
+    return
+  }
+
+  if (event.key !== 'Tab' || !panel.value) {
+    return
+  }
+
+  const focusable = [...panel.value.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )].filter((element) => element.offsetParent !== null)
+
+  if (focusable.length === 0) {
+    event.preventDefault()
+    panel.value.focus()
+    return
+  }
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === panel.value)) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
   }
 }
 
@@ -55,7 +86,11 @@ watch(
     document.body.style.overflow = isOpen ? 'hidden' : ''
 
     if (isOpen) {
-      requestAnimationFrame(() => panel.value?.focus())
+      previouslyFocused = document.activeElement
+      nextTick(() => panel.value?.focus())
+    } else if (previouslyFocused instanceof HTMLElement) {
+      previouslyFocused.focus()
+      previouslyFocused = null
     }
   },
 )
@@ -98,7 +133,7 @@ onBeforeUnmount(() => {
             <button
               v-if="closable"
               type="button"
-              class="btn-icon -mr-1 -mt-1 h-8 w-8 shrink-0"
+              class="btn-icon btn-icon-sm -mr-1 -mt-1 shrink-0"
               aria-label="Tutup dialog"
               @click="close"
             >

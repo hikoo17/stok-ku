@@ -69,7 +69,7 @@ const stockStatusOptions = [
 ]
 
 const productStatusOptions = [
-  { value: 'all', label: 'Semua Produk' },
+  { value: 'all', label: 'Semua Barang' },
   { value: 'active', label: 'Aktif' },
   { value: 'inactive', label: 'Diarsipkan' },
 ]
@@ -223,23 +223,23 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
   <div>
     <PageHeader
       title="Data Barang"
-      description="Kelola barang, harga, dan batas stok minimum."
+      description="Kelola data barang, harga, dan stok."
     >
       <template #actions>
-        <RouterLink :to="{ name: 'products.create' }" class="btn btn-primary btn-sm">
+        <RouterLink :to="{ name: 'products.create' }" class="btn btn-primary">
           <Plus class="h-4 w-4" aria-hidden="true" />
           Tambah Barang
         </RouterLink>
       </template>
     </PageHeader>
 
-    <div class="mb-4 card p-4">
+    <div class="filter-bar">
       <div class="flex flex-col gap-3 xl:flex-row xl:items-end">
         <div class="min-w-0 flex-1">
           <SearchInput
             v-model="filters.search"
             placeholder="Cari kode atau nama barang..."
-            label="Cari barang"
+            label="Cari Barang"
           />
         </div>
 
@@ -257,7 +257,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
           <FilterDropdown
             v-model="filters.status"
             :options="productStatusOptions"
-            label="Data Produk"
+            label="Status Barang"
           />
         </div>
 
@@ -267,7 +267,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
           class="btn btn-ghost btn-sm shrink-0"
           @click="resetFilters"
         >
-          <RefreshCw class="h-3.5 w-3.5" aria-hidden="true" />
+          <RefreshCw class="h-4 w-4" aria-hidden="true" />
           Reset
         </button>
       </div>
@@ -287,7 +287,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
         </div>
         <button
           type="button"
-          class="btn-icon h-8 w-8"
+          class="btn-icon-sm"
           aria-label="Muat ulang data barang"
           :disabled="loading"
           @click="loadProducts"
@@ -360,7 +360,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
           <div class="flex items-center justify-end gap-1">
             <RouterLink
               :to="{ name: 'products.show', params: { id: row.id } }"
-              class="btn-icon h-8 w-8"
+              class="btn-icon-sm"
               :aria-label="`Lihat detail ${row.name}`"
               title="Lihat detail"
             >
@@ -368,7 +368,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
             </RouterLink>
             <RouterLink
               :to="{ name: 'products.edit', params: { id: row.id } }"
-              class="btn-icon h-8 w-8"
+              class="btn-icon-sm"
               :aria-label="`Edit ${row.name}`"
               title="Edit"
             >
@@ -377,7 +377,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
             <button
               v-if="row.is_active"
               type="button"
-              class="btn-icon h-8 w-8 hover:bg-amber-50 hover:text-amber-700"
+              class="btn-icon-sm hover:bg-amber-50 hover:text-amber-700"
               :aria-label="`Arsipkan ${row.name}`"
               title="Arsipkan"
               @click="archiveTarget = row"
@@ -387,7 +387,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
             <button
               v-else
               type="button"
-              class="btn-icon h-8 w-8 hover:bg-emerald-50 hover:text-emerald-700"
+              class="btn-icon-sm hover:bg-emerald-50 hover:text-emerald-700"
               :aria-label="`Aktifkan kembali ${row.name}`"
               title="Aktifkan kembali"
               :disabled="restoringId === row.id"
@@ -413,10 +413,10 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
             "
           >
             <template #action>
-              <button v-if="hasActiveFilters" type="button" class="btn btn-secondary btn-sm" @click="resetFilters">
+              <button v-if="hasActiveFilters" type="button" class="btn btn-secondary" @click="resetFilters">
                 Reset Filter
               </button>
-              <RouterLink v-else :to="{ name: 'products.create' }" class="btn btn-primary btn-sm">
+              <RouterLink v-else :to="{ name: 'products.create' }" class="btn btn-primary">
                 <Plus class="h-4 w-4" aria-hidden="true" />
                 Tambah Barang
               </RouterLink>
@@ -431,7 +431,7 @@ onBeforeUnmount(() => clearTimeout(searchTimeout))
     <ConfirmationDialog
       :model-value="Boolean(archiveTarget)"
       title="Arsipkan barang?"
-      :message="`Barang “${archiveTarget?.name || ''}” akan diarsipkan dan tidak dapat dipilih untuk transaksi baru. Riwayat transaksi tetap tersimpan.`"
+      :message="`Barang “${archiveTarget?.name || ''}” akan diarsipkan. Riwayat transaksi tetap tersimpan.`"
       confirm-label="Ya, Arsipkan"
       variant="danger"
       :loading="archiving"

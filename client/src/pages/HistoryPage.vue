@@ -174,29 +174,26 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
 
 <template>
   <div>
-    <PageHeader
-      title="Riwayat Stok"
-      description="Telusuri seluruh pergerakan barang masuk dan keluar."
-    >
+    <PageHeader title="Riwayat Stok" description="Riwayat pergerakan stok.">
       <template #actions>
-        <RouterLink to="/stock-in" class="btn btn-secondary btn-sm">
+        <RouterLink to="/stock-in" class="btn btn-secondary">
           <ArrowDownToLine class="h-4 w-4" aria-hidden="true" />
           Barang Masuk
         </RouterLink>
-        <RouterLink to="/stock-out" class="btn btn-secondary btn-sm">
+        <RouterLink to="/stock-out" class="btn btn-secondary">
           <ArrowUpFromLine class="h-4 w-4" aria-hidden="true" />
           Barang Keluar
         </RouterLink>
       </template>
     </PageHeader>
 
-    <div class="mb-4 card p-4">
+    <div class="filter-bar">
       <div class="grid grid-cols-1 gap-3 lg:grid-cols-12">
         <div class="lg:col-span-4">
           <SearchInput
             v-model="filters.search"
             placeholder="Cari referensi, kode, atau nama barang..."
-            label="Cari riwayat"
+            label="Cari Riwayat"
           />
         </div>
         <div class="lg:col-span-3">
@@ -215,7 +212,7 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
             class="btn btn-ghost btn-sm w-full"
             @click="resetFilters"
           >
-            <RotateCcw class="h-3.5 w-3.5" aria-hidden="true" />
+            <RotateCcw class="h-4 w-4" aria-hidden="true" />
             Reset
           </button>
         </div>
@@ -243,7 +240,7 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
         </div>
         <button
           type="button"
-          class="btn-icon h-8 w-8"
+          class="btn-icon-sm"
           aria-label="Muat ulang riwayat"
           :disabled="loading"
           @click="loadTransactions"
@@ -256,8 +253,6 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
         :columns="columns"
         :rows="transactions"
         :loading="loading"
-        empty-title="Belum ada transaksi"
-        empty-message="Riwayat barang masuk dan keluar akan tampil di sini."
       >
         <template #cell-transaction_date="{ row }">
           <span class="text-slate-600">{{ formatTransactionDateTime(row.transaction_date) }}</span>
@@ -293,7 +288,7 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
         <template #cell-quantity="{ row }">
           <span
             class="font-semibold"
-            :class="row.transaction_type === 'in' ? 'text-emerald-600' : 'text-sky-600'"
+            :class="row.transaction_type === 'in' ? 'text-emerald-700' : 'text-sky-700'"
           >
             {{ row.transaction_type === 'in' ? '+' : '-' }}{{ formatNumber(row.quantity) }}
             <span class="text-xs font-normal text-slate-500">{{ row.product?.unit?.abbreviation }}</span>
@@ -331,12 +326,12 @@ onBeforeUnmount(() => clearTimeout(filterTimeout))
             :title="hasFilters ? 'Transaksi tidak ditemukan' : 'Belum ada transaksi'"
             :message="
               hasFilters
-                ? 'Coba ubah kata kunci, tanggal, atau filter yang digunakan.'
-                : 'Riwayat barang masuk dan keluar akan tampil di sini.'
+                ? 'Ubah kata kunci, tanggal, atau filter yang digunakan.'
+                : 'Transaksi barang masuk dan keluar akan tampil di sini.'
             "
           >
             <template #action>
-              <button v-if="hasFilters" type="button" class="btn btn-secondary btn-sm" @click="resetFilters">
+              <button v-if="hasFilters" type="button" class="btn btn-secondary" @click="resetFilters">
                 Reset Filter
               </button>
             </template>

@@ -22,7 +22,7 @@ defineEmits(['retry'])
     </div>
     <h3 class="mt-4 text-sm font-semibold text-slate-900">Terjadi Kesalahan</h3>
     <p class="mt-1 max-w-md text-sm text-slate-500">{{ message }}</p>
-    <button type="button" class="btn btn-secondary btn-sm mt-5" @click="$emit('retry')">
+    <button type="button" class="btn btn-secondary mt-5" @click="$emit('retry')">
       <RefreshCw class="h-3.5 w-3.5" aria-hidden="true" />
       {{ retryLabel }}
     </button>

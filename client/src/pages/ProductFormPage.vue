@@ -1,11 +1,13 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, CircleAlert, Info, Save } from 'lucide-vue-next'
+import { ArrowLeft, Save } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import FormField from '../components/FormField.vue'
 import SelectField from '../components/SelectField.vue'
-import LoadingState from '../components/LoadingState.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
+import Skeleton from '../components/Skeleton.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
 import ErrorState from '../components/ErrorState.vue'
 import { productService } from '../services/products'
 import { categoryService } from '../services/categories'
@@ -70,7 +72,7 @@ function validate() {
   clearErrors()
 
   if (!form.sku.trim()) {
-    errors.sku = 'Kode produk wajib diisi.'
+    errors.sku = 'Kode Barang wajib diisi.'
   }
 
   if (!form.name.trim()) {
@@ -208,26 +210,44 @@ onMounted(loadForm)
   <div>
     <PageHeader
       :title="isEdit ? 'Edit Barang' : 'Tambah Barang'"
-      :description="
-        isEdit
-          ? 'Perbarui informasi barang tanpa mengubah stok secara langsung.'
-          : 'Daftarkan barang baru beserta stok awal dan batas minimumnya.'
-      "
-      :breadcrumbs="[
-        { label: 'Data Barang', to: '/products' },
-        { label: isEdit ? 'Edit Barang' : 'Tambah Barang' },
-      ]"
+      :description="isEdit ? 'Perbarui informasi barang.' : 'Lengkapi informasi barang baru.'"
     >
       <template #actions>
-        <RouterLink to="/products" class="btn btn-secondary btn-sm">
+        <RouterLink to="/products" class="btn btn-secondary">
           <ArrowLeft class="h-4 w-4" aria-hidden="true" />
           Kembali
         </RouterLink>
       </template>
     </PageHeader>
 
-    <div v-if="loading" class="card">
-      <LoadingState text="Memuat form barang..." />
+    <div v-if="loading" class="grid grid-cols-1 gap-6 lg:grid-cols-3" role="status" aria-label="Memuat form barang">
+      <div class="space-y-6 lg:col-span-2">
+        <div v-for="section in 3" :key="section" class="card">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <Skeleton width="9rem" height="1rem" />
+          </div>
+          <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
+            <div v-for="field in section === 3 ? 2 : 4" :key="field" class="space-y-2">
+              <Skeleton width="35%" height="0.7rem" />
+              <Skeleton height="2.5rem" class="rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div class="card p-5 sm:p-6">
+          <Skeleton width="8rem" height="1rem" />
+          <Skeleton width="90%" height="0.7rem" class="mt-3" />
+          <div class="mt-4 rounded-lg border border-slate-200 p-4">
+            <Skeleton width="60%" height="0.8rem" />
+            <Skeleton width="80%" height="0.65rem" class="mt-2" />
+          </div>
+        </div>
+        <div class="card flex gap-2 p-4 sm:p-5">
+          <Skeleton height="2.5rem" class="flex-1 rounded-lg" />
+          <Skeleton height="2.5rem" class="flex-1 rounded-lg" />
+        </div>
+      </div>
     </div>
 
     <div v-else-if="loadError" class="card">
@@ -247,11 +267,10 @@ onMounted(loadForm)
         <section class="card">
           <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
             <h2 class="section-title">Informasi Barang</h2>
-            <p class="mt-0.5 text-xs text-slate-500">Identitas dan pengelompokan barang.</p>
           </div>
 
           <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
-            <FormField label="Kode Produk" for-id="sku" required :error="errors.sku" hint="Contoh: RH-001. Harus unik.">
+            <FormField label="Kode Barang" for-id="sku" required :error="errors.sku" hint="Contoh: RH-001.">
               <input
                 id="sku"
                 v-model="form.sku"
@@ -299,7 +318,7 @@ onMounted(loadForm)
             />
 
             <div class="sm:col-span-2">
-              <FormField label="Deskripsi" for-id="description" :error="errors.description" hint="Opsional. Maksimal 2.000 karakter.">
+              <FormField label="Deskripsi" for-id="description" :error="errors.description">
                 <textarea
                   id="description"
                   v-model="form.description"
@@ -317,9 +336,7 @@ onMounted(loadForm)
         <section class="card">
           <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
             <h2 class="section-title">Harga</h2>
-            <p class="mt-0.5 text-xs text-slate-500">
-              Harga ini menjadi nilai awal saat mencatat transaksi.
-            </p>
+            <p class="mt-0.5 text-xs text-slate-500">Nilai awal untuk transaksi.</p>
           </div>
 
           <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
@@ -364,9 +381,7 @@ onMounted(loadForm)
         <section class="card">
           <div class="border-b border-slate-100 px-5 py-4 sm:px-6">
             <h2 class="section-title">Persediaan</h2>
-            <p class="mt-0.5 text-xs text-slate-500">
-              Stok awal dicatat sebagai transaksi barang masuk yang dapat diaudit.
-            </p>
+            <p class="mt-0.5 text-xs text-slate-500">Stok awal dicatat sebagai transaksi masuk.</p>
           </div>
 
           <div class="grid grid-cols-1 gap-5 p-5 sm:grid-cols-2 sm:p-6">
@@ -375,7 +390,7 @@ onMounted(loadForm)
               label="Stok Awal"
               for-id="opening_stock"
               :error="errors.opening_stock"
-              :hint="`Isi 0 jika barang belum memiliki stok.${selectedUnit ? ` Satuan: ${selectedUnit.abbreviation}.` : ''}`"
+              :hint="`Isi 0 jika belum ada stok.${selectedUnit ? ` Satuan: ${selectedUnit.abbreviation}.` : ''}`"
             >
               <input
                 id="opening_stock"
@@ -406,11 +421,11 @@ onMounted(loadForm)
             </div>
 
             <FormField
-              label="Batas Stok Minimum"
+              label="Stok Minimum"
               for-id="minimum_stock"
               required
               :error="errors.minimum_stock"
-              hint="Barang dianggap menipis jika stok lebih dari 0 dan kurang dari atau sama dengan batas ini."
+              hint="Barang dianggap menipis jika stok sama dengan atau di bawah batas ini."
             >
               <input
                 id="minimum_stock"
@@ -431,67 +446,26 @@ onMounted(loadForm)
         <section class="card p-5 sm:p-6">
           <h2 class="section-title">Status Barang</h2>
           <p class="mt-1 text-sm text-slate-500">
-            Barang nonaktif tetap terlihat di riwayat dan laporan, tetapi tidak dapat ditransaksikan.
+            Barang nonaktif tetap terlihat di riwayat dan laporan.
           </p>
 
-          <div class="mt-4 flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-4">
-            <div>
-              <p class="text-sm font-medium text-slate-800">
-                {{ form.is_active ? 'Barang aktif' : 'Barang diarsipkan' }}
-              </p>
-              <p class="mt-0.5 text-xs text-slate-500">
-                {{ form.is_active ? 'Dapat dipilih pada transaksi.' : 'Tidak dapat dipilih pada transaksi.' }}
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              :aria-checked="form.is_active"
+          <div class="mt-4">
+            <ToggleSwitch
+              v-model="form.is_active"
+              :label="form.is_active ? 'Barang Aktif' : 'Barang Diarsipkan'"
+              :description="
+                form.is_active
+                  ? 'Dapat dipilih pada transaksi.'
+                  : 'Tidak dapat dipilih pada transaksi.'
+              "
               aria-label="Ubah status barang"
-              class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-              :class="form.is_active ? 'bg-emerald-500' : 'bg-slate-300'"
-              @click="form.is_active = !form.is_active"
-            >
-              <span
-                class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-                :class="form.is_active ? 'translate-x-6' : 'translate-x-1'"
-              />
-            </button>
-          </div>
-        </section>
-
-        <section class="card border-indigo-100 bg-indigo-50/50 p-5 sm:p-6">
-          <div class="flex items-start gap-3">
-            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-              <Info class="h-4 w-4" aria-hidden="true" />
-            </span>
-            <div>
-              <h2 class="text-sm font-semibold text-slate-900">Catatan</h2>
-              <ul class="mt-2 space-y-2 text-xs leading-5 text-slate-600">
-                <li class="flex gap-2">
-                  <CircleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" aria-hidden="true" />
-                  Kode produk harus unik dan mudah dikenali.
-                </li>
-                <li class="flex gap-2">
-                  <CircleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" aria-hidden="true" />
-                  Stok awal hanya dapat diisi saat barang pertama kali dibuat.
-                </li>
-                <li class="flex gap-2">
-                  <CircleAlert class="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" aria-hidden="true" />
-                  Harga transaksi dapat berbeda dari harga master bila diperlukan.
-                </li>
-              </ul>
-            </div>
+            />
           </div>
         </section>
 
         <div class="card flex flex-col gap-2 p-4 sm:flex-row-reverse sm:p-5">
           <button type="submit" class="btn btn-primary flex-1" :disabled="saving">
-            <span
-              v-if="saving"
-              class="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-              aria-hidden="true"
-            />
+            <LoadingSpinner v-if="saving" />
             <Save v-else class="h-4 w-4" aria-hidden="true" />
             {{ saving ? 'Menyimpan...' : 'Simpan Barang' }}
           </button>
