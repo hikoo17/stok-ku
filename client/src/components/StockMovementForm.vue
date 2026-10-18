@@ -12,6 +12,7 @@ import {
 } from 'lucide-vue-next'
 import PageHeader from './PageHeader.vue'
 import FormField from './FormField.vue'
+import ProductCombobox from './ProductCombobox.vue'
 import Skeleton from './Skeleton.vue'
 import LoadingSpinner from './LoadingSpinner.vue'
 import ErrorState from './ErrorState.vue'
@@ -100,13 +101,6 @@ const stockAfter = computed(() => {
 const isInsufficient = computed(() => !isIncoming.value && quantityValue.value > stockBefore.value)
 const totalValue = computed(() => quantityValue.value * unitPriceValue.value)
 
-const productOptions = computed(() =>
-  products.value.map((product) => ({
-    value: product.id,
-    label: `${product.sku} — ${product.name} (stok: ${formatNumber(product.current_stock)} ${product.unit?.abbreviation || ''})`,
-  })),
-)
-
 function createUuid() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID()
@@ -133,8 +127,8 @@ function defaultPriceForProduct(product) {
   return isIncoming.value ? product.purchase_price : product.selling_price
 }
 
-function applyProductSelection() {
-  const product = selectedProduct.value
+function selectProduct(product) {
+  form.product_id = product?.id ?? ''
   form.unit_price = defaultPriceForProduct(product)
   delete errors.product_id
 }
@@ -362,18 +356,13 @@ onMounted(loadProducts)
                 :error="errors.product_id"
                 hint="Hanya barang aktif yang dapat dipilih."
               >
-                <select
+                <ProductCombobox
                   id="movement-product"
-                  v-model="form.product_id"
-                  class="field-input cursor-pointer"
-                  :class="{ 'field-input-error': errors.product_id }"
-                  @change="applyProductSelection"
-                >
-                  <option value="" disabled>Pilih barang</option>
-                  <option v-for="option in productOptions" :key="option.value" :value="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
+                  :model-value="form.product_id"
+                  :options="products"
+                  :invalid="Boolean(errors.product_id)"
+                  @select="selectProduct"
+                />
               </FormField>
             </div>
 

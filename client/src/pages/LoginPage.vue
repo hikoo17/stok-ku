@@ -77,7 +77,7 @@ async function submit() {
           </div>
           <h1 class="mt-4 text-xl font-semibold tracking-tight text-slate-900">Masuk ke Stok Ku</h1>
           <p class="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-            Selamat datang. Masuk untuk mengelola persediaan barang Anda.
+            Masuk untuk mengelola persediaan barang Anda.
           </p>
         </div>
 

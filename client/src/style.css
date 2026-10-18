@@ -117,7 +117,7 @@
   }
 
   .table-th {
-    @apply whitespace-nowrap px-4 py-3;
+    @apply whitespace-nowrap px-4 py-3 uppercase;
   }
 
   .table-td {
