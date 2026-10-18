@@ -14,7 +14,7 @@ Backend Laravel menyediakan REST API dan frontend Vue 3 berjalan sebagai aplikas
 - Pencegahan stok negatif dan perlindungan dari pengiriman ganda menggunakan idempotency key.
 - Riwayat stok dengan filter tanggal, barang, jenis transaksi, pencarian, pengurutan, dan pagination.
 - Laporan stok saat ini, pergerakan stok, dan stok menipis.
-- Ekspor CSV untuk ketiga laporan dengan filter yang sama seperti tampilan laporan.
+- Ekspor laporan ke CSV, PDF, dan DOCX dengan filter yang sama seperti tampilan laporan.
 - Autentikasi menggunakan Laravel Sanctum (token API).
 - Tampilan responsif untuk desktop dan perangkat seluler.
 
@@ -25,6 +25,7 @@ Backend Laravel menyediakan REST API dan frontend Vue 3 berjalan sebagai aplikas
 - Laravel 13
 - MySQL 8 / MariaDB
 - Laravel Sanctum
+- DomPDF dan PHPWord untuk ekspor PDF/DOCX
 - PHPUnit
 
 **Frontend**
@@ -46,7 +47,9 @@ Seluruh teks antarmuka menggunakan Bahasa Indonesia. Ketentuan visual utama:
 - Label field berada di atas input, memakai ukuran dan warna yang sama di seluruh formulir.
 - Radius, border, shadow, dan focus ring mengikuti kelas utilitas di `client/src/style.css`.
 - Status stok memakai badge yang sama: Stok Aman, Stok Menipis, dan Stok Habis.
-- Halaman menggunakan komponen bersama: `PageHeader`, `DataTable`, `Pagination`, `SearchInput`, `FilterDropdown`, `AppModal`, `ConfirmationDialog`, dan toast.
+- Halaman menggunakan komponen bersama: `PageHeader`, `DataTable`, `Pagination`, `SearchInput`, `FilterDropdown`, `ProductCombobox`, `AppModal`, `ConfirmationDialog`, dan toast.
+- Pemilihan barang pada transaksi memakai combobox yang dapat dicari dengan keyboard.
+- Aksi muat ulang dan unduh laporan berada di atas tabel laporan; format tersedia: CSV, PDF, dan DOCX.
 - Loading awal memakai skeleton (`Skeleton`, `SkeletonTable`, `SkeletonStatCard`); aksi singkat memakai `LoadingSpinner`.
 - Dialog menangkap fokus keyboard, mendukung tombol Escape, dan mengembalikan fokus ke pemicu setelah ditutup.
 - Animasi dinonaktifkan otomatis ketika pengguna memilih `prefers-reduced-motion`.
@@ -91,7 +94,7 @@ stok-ku/
 
 Pastikan perangkat lunak berikut sudah terpasang:
 
-- PHP 8.3 atau lebih baru dengan ekstensi `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, dan `fileinfo`.
+- PHP 8.3 atau lebih baru dengan ekstensi `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `fileinfo`, `gd`, dan `zip`.
 - Composer 2.
 - MySQL 8 atau MariaDB 10.6 atau lebih baru.
 - Node.js 20.19+ atau 22.12+ dan npm 10+.
@@ -253,7 +256,7 @@ Cakupan pengujian penting:
 - Produk yang diarsipkan tidak dapat ditransaksikan dan riwayatnya tetap tersimpan.
 - Perhitungan dashboard dan laporan.
 - Autentikasi, login, logout, dan pencabutan token.
-- Ekspor CSV dan pencegahan formula injection.
+- Ekspor CSV, PDF, dan DOCX serta pencegahan formula injection pada CSV.
 
 Pemeriksaan build frontend:
 
@@ -326,11 +329,11 @@ Accept: application/json
 | POST | `/stock-in` | Catat barang masuk |
 | POST | `/stock-out` | Catat barang keluar |
 | GET | `/reports/inventory` | Laporan stok saat ini |
-| GET | `/reports/inventory/export` | Ekspor CSV stok saat ini |
+| GET | `/reports/inventory/export` | Ekspor stok saat ini (`format=csv\|pdf\|docx`) |
 | GET | `/reports/stock-movements` | Laporan pergerakan stok |
-| GET | `/reports/stock-movements/export` | Ekspor CSV pergerakan stok |
+| GET | `/reports/stock-movements/export` | Ekspor pergerakan stok (`format=csv\|pdf\|docx`) |
 | GET | `/reports/low-stock` | Laporan stok menipis |
-| GET | `/reports/low-stock/export` | Ekspor CSV stok menipis |
+| GET | `/reports/low-stock/export` | Ekspor stok menipis (`format=csv\|pdf\|docx`) |
 
 Response daftar menggunakan format pagination Laravel (`data`, `meta`, `links`). Validasi gagal mengembalikan HTTP `422` dengan struktur `errors` per field. Pesan validasi disediakan dalam Bahasa Indonesia melalui `server/lang/id/validation.php`.
 
@@ -381,6 +384,7 @@ Jika kebutuhan bisnis berubah, kategori dan satuan dapat disesuaikan melalui ant
 - Batasi origin CORS melalui `FRONTEND_URL`.
 - Frontend tidak menyimpan kata sandi, hanya token akses.
 - Ekspor CSV menetralkan nilai yang diawali karakter formula (`=`, `+`, `-`, `@`) untuk mengurangi risiko formula injection.
+- Ekspor PDF dihasilkan dengan DomPDF; ekspor DOCX dihasilkan dengan PHPWord. Keduanya memakai filter dan data yang sama dengan tabel laporan.
 
 ## Pemecahan Masalah
 
