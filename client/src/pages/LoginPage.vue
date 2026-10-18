@@ -76,6 +76,9 @@ async function submit() {
             <Package class="h-5 w-5" aria-hidden="true" />
           </div>
           <h1 class="mt-4 text-xl font-semibold tracking-tight text-slate-900">Masuk ke Stok Ku</h1>
+          <p class="mt-2 max-w-xs text-sm leading-6 text-slate-500">
+            Selamat datang. Masuk untuk mengelola persediaan barang Anda.
+          </p>
         </div>
 
         <div
@@ -86,7 +89,7 @@ async function submit() {
           {{ formError }}
         </div>
 
-        <form class="space-y-4" novalidate @submit.prevent="submit">
+        <form class="space-y-5" novalidate @submit.prevent="submit">
           <div>
             <label for="email" class="field-label">Email</label>
             <div class="relative">
@@ -139,11 +142,17 @@ async function submit() {
             <p v-if="errors.password" id="password-error" class="field-error">{{ errors.password }}</p>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-lg w-full" :disabled="loading">
+          <button type="submit" class="btn btn-primary btn-lg mt-2 w-full" :disabled="loading">
             <LoadingSpinner v-if="loading" />
             {{ loading ? 'Memproses...' : 'Masuk' }}
           </button>
         </form>
+
+        <div class="mt-6 border-t border-slate-100 pt-4">
+          <p class="text-center text-xs text-slate-500">
+            &copy; {{ new Date().getFullYear() }} Stok Ku. Seluruh hak cipta dilindungi.
+          </p>
+        </div>
       </div>
     </div>
   </main>
