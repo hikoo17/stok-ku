@@ -134,7 +134,47 @@ class ReportApiTest extends TestCase
         $content = $response->streamedContent();
 
         $this->assertStringContainsString('Laporan Pergerakan Stok', $content);
-        $this->assertStringContainsString('Total barang masuk: 2', $content);
+        $this->assertStringContainsString('"Total barang masuk",2', $content);
         $this->assertStringContainsString('TRX-IN', $content);
+    }
+
+    public function test_reports_can_be_exported_as_pdf_and_docx(): void
+    {
+        $product = $this->createProduct(['sku' => 'PDF-001', 'current_stock' => 4]);
+
+        app(InventoryService::class)->recordStockIn([
+            'product_id' => $product->id,
+            'quantity' => 2,
+            'transaction_date' => now()->toDateTimeString(),
+        ]);
+
+        $pdf = $this->get('/api/v1/reports/inventory/export?format=pdf');
+
+        $pdf->assertOk();
+        $this->assertStringContainsString('application/pdf', $pdf->headers->get('content-type'));
+        $this->assertStringStartsWith('%PDF', $pdf->baseResponse->getContent());
+
+        $docx = $this->get('/api/v1/reports/stock-movements/export?'.http_build_query([
+            'format' => 'docx',
+            'date_from' => now()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ]));
+
+        $docx->assertOk();
+        $this->assertStringContainsString(
+            'wordprocessingml.document',
+            (string) $docx->headers->get('content-type'),
+        );
+        $this->assertStringStartsWith(
+            'PK',
+            file_get_contents($docx->baseResponse->getFile()->getPathname()),
+        );
+    }
+
+    public function test_export_rejects_unsupported_format(): void
+    {
+        $this->get('/api/v1/reports/inventory/export?format=xlsx')
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('format');
     }
 }

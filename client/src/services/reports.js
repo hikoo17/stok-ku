@@ -16,7 +16,7 @@ export const reportService = {
   lowStock(params = {}) {
     return api.get(REPORT_ENDPOINTS.lowStock, { params })
   },
-  async download(type, params = {}) {
+  async download(type, params = {}, format = 'csv') {
     const endpoint = REPORT_ENDPOINTS[type]
 
     if (!endpoint) {
@@ -24,13 +24,18 @@ export const reportService = {
     }
 
     const response = await api.get(`${endpoint}/export`, {
-      params,
+      params: { ...params, format },
       responseType: 'blob',
     })
 
     const disposition = response.headers['content-disposition'] || ''
     const filenameMatch = disposition.match(/filename="?([^";]+)"?/i)
-    const fallback = `laporan-${type}-${new Date().toISOString().slice(0, 10)}.csv`
+    const fallbackNames = {
+      inventory: 'laporan-stok-saat-ini',
+      movements: 'laporan-pergerakan-stok',
+      lowStock: 'laporan-stok-menipis',
+    }
+    const fallback = `${fallbackNames[type] || `laporan-${type}`}-${new Date().toISOString().slice(0, 10)}.${format}`
     const filename = filenameMatch?.[1] || fallback
 
     const url = URL.createObjectURL(response.data)

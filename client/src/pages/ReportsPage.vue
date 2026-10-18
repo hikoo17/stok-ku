@@ -1,13 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  Boxes,
-  Download,
-  History,
-  RefreshCw,
-  TriangleAlert,
-} from 'lucide-vue-next'
+import { Boxes, History, TriangleAlert } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import SearchInput from '../components/SearchInput.vue'
 import FilterDropdown from '../components/FilterDropdown.vue'
@@ -17,6 +11,7 @@ import Pagination from '../components/Pagination.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import ErrorState from '../components/ErrorState.vue'
 import Skeleton from '../components/Skeleton.vue'
+import ReportExportActions from '../components/ReportExportActions.vue'
 import { reportService } from '../services/reports'
 import { categoryService } from '../services/categories'
 import { productService } from '../services/products'
@@ -48,7 +43,6 @@ const loaded = reactive({ inventory: false, movements: false, 'low-stock': false
 
 const categories = ref([])
 const products = ref([])
-const optionsLoading = ref(true)
 
 const categoryOptions = computed(() => [
   { value: '', label: 'Semua Kategori' },
@@ -88,7 +82,7 @@ function createReportState() {
     loading: false,
     loaded: false,
     error: '',
-    exporting: false,
+    exportingFormat: '',
   }
 }
 
@@ -156,8 +150,6 @@ let movementsTimer = null
 let lowStockTimer = null
 
 async function loadOptions() {
-  optionsLoading.value = true
-
   try {
     const [categoryResponse, productResponse] = await Promise.all([
       categoryService.list({ status: 'all', per_page: 100 }),
@@ -168,8 +160,6 @@ async function loadOptions() {
     products.value = productResponse.data.data
   } catch {
     // Filters degrade gracefully when option data cannot be loaded.
-  } finally {
-    optionsLoading.value = false
   }
 }
 
@@ -277,8 +267,47 @@ function setTab(tab) {
   }
 }
 
-function refreshActive() {
-  loadTab(activeTab.value)
+function inventoryParams() {
+  return {
+    search: inventory.filters.search || undefined,
+    category_id: inventory.filters.category_id || undefined,
+    stock_status: inventory.filters.stock_status || undefined,
+  }
+}
+
+function movementParams() {
+  return {
+    search: movements.filters.search || undefined,
+    category_id: movements.filters.category_id || undefined,
+    product_id: movements.filters.product_id || undefined,
+    transaction_type: movements.filters.transaction_type || undefined,
+    date_from: movements.filters.date_from || undefined,
+    date_to: movements.filters.date_to || undefined,
+  }
+}
+
+function lowStockParams() {
+  return {
+    search: lowStock.filters.search || undefined,
+    category_id: lowStock.filters.category_id || undefined,
+  }
+}
+
+async function downloadReport(type, format, state, params) {
+  if (state.exportingFormat) {
+    return
+  }
+
+  state.exportingFormat = format
+
+  try {
+    await reportService.download(type, params, format)
+    toast.success(`Laporan ${format.toUpperCase()} berhasil diunduh.`)
+  } catch (requestError) {
+    toast.error(getErrorMessage(requestError, 'Laporan gagal diunduh. Silakan coba lagi.'))
+  } finally {
+    state.exportingFormat = ''
+  }
 }
 
 function clearTimer(key) {
@@ -309,49 +338,6 @@ function scheduleLoad(key) {
   if (key === 'inventory') inventoryTimer = timer
   if (key === 'movements') movementsTimer = timer
   if (key === 'low-stock') lowStockTimer = timer
-}
-
-function exportActive() {
-  if (activeTab.value === 'inventory') {
-    return downloadReport('inventory', inventory, {
-      search: inventory.filters.search || undefined,
-      category_id: inventory.filters.category_id || undefined,
-      stock_status: inventory.filters.stock_status || undefined,
-    })
-  }
-
-  if (activeTab.value === 'movements') {
-    return downloadReport('movements', movements, {
-      search: movements.filters.search || undefined,
-      category_id: movements.filters.category_id || undefined,
-      product_id: movements.filters.product_id || undefined,
-      transaction_type: movements.filters.transaction_type || undefined,
-      date_from: movements.filters.date_from || undefined,
-      date_to: movements.filters.date_to || undefined,
-    })
-  }
-
-  return downloadReport('low-stock', lowStock, {
-    search: lowStock.filters.search || undefined,
-    category_id: lowStock.filters.category_id || undefined,
-  })
-}
-
-async function downloadReport(type, state, params) {
-  if (state.exporting) {
-    return
-  }
-
-  state.exporting = true
-
-  try {
-    await reportService.download(type, params)
-    toast.success('Laporan berhasil diunduh.')
-  } catch (requestError) {
-    toast.error(getErrorMessage(requestError, 'Laporan gagal diunduh. Silakan coba lagi.'))
-  } finally {
-    state.exporting = false
-  }
 }
 
 function resetInventoryFilters() {
@@ -409,34 +395,10 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <PageHeader
-      title="Laporan"
-      description="Laporan persediaan barang."
-    >
-      <template #actions>
-        <button type="button" class="btn btn-secondary" :disabled="optionsLoading" @click="refreshActive">
-          <RefreshCw class="h-4 w-4" aria-hidden="true" />
-          Muat Ulang
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          :disabled="
-            optionsLoading ||
-            (activeTab === 'inventory' && inventory.exporting) ||
-            (activeTab === 'movements' && movements.exporting) ||
-            (activeTab === 'low-stock' && lowStock.exporting)
-          "
-          @click="exportActive"
-        >
-          <Download class="h-4 w-4" aria-hidden="true" />
-          Unduh CSV
-        </button>
-      </template>
-    </PageHeader>
+    <PageHeader title="Laporan" description="Laporan persediaan barang." />
 
     <div class="mb-5 overflow-x-auto">
-      <div class="inline-flex min-w-full gap-1 rounded-xl border border-slate-200 bg-white p-1 sm:min-w-0" role="tablist" aria-label="Jenis laporan">
+      <div class="inline-flex min-w-full gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:min-w-0" role="tablist" aria-label="Jenis laporan">
         <button
           v-for="tab in TABS"
           :key="tab.id"
@@ -510,22 +472,21 @@ onBeforeUnmount(() => {
 
       <div class="card overflow-hidden">
         <div class="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 class="section-title">Laporan Stok Saat Ini</h2>
-            <p class="mt-0.5 text-xs text-slate-500">
-              {{ inventory.meta.total }} barang
-              <span v-if="inventory.generatedAt"> &middot; diperbarui {{ formatDateTime(inventory.generatedAt) }}</span>
-            </p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="section-title">Laporan Stok Saat Ini</h2>
+              <p class="mt-0.5 text-xs text-slate-500">
+                {{ inventory.meta.total }} barang
+                <span v-if="inventory.generatedAt"> &middot; diperbarui {{ formatDateTime(inventory.generatedAt) }}</span>
+              </p>
+            </div>
+            <ReportExportActions
+              :loading="inventory.loading"
+              :exporting="inventory.exportingFormat"
+              @refresh="loadInventory"
+              @download="(format) => downloadReport('inventory', format, inventory, inventoryParams())"
+            />
           </div>
-          <button
-            type="button"
-            class="btn btn-secondary btn-sm self-start sm:self-auto"
-            :disabled="inventory.exporting || inventory.loading"
-            @click="exportActive"
-          >
-            <Download class="h-4 w-4" aria-hidden="true" />
-            {{ inventory.exporting ? 'Mengunduh...' : 'Unduh CSV' }}
-          </button>
         </div>
 
         <ErrorState v-if="inventory.error" :message="inventory.error" @retry="loadInventory" />
@@ -701,15 +662,12 @@ onBeforeUnmount(() => {
               <span v-if="movements.generatedAt"> &middot; diperbarui {{ formatDateTime(movements.generatedAt) }}</span>
             </p>
           </div>
-          <button
-            type="button"
-            class="btn btn-secondary btn-sm self-start sm:self-auto"
-            :disabled="movements.exporting || movements.loading"
-            @click="exportActive"
-          >
-            <Download class="h-4 w-4" aria-hidden="true" />
-            {{ movements.exporting ? 'Mengunduh...' : 'Unduh CSV' }}
-          </button>
+          <ReportExportActions
+            :loading="movements.loading"
+            :exporting="movements.exportingFormat"
+            @refresh="loadMovements"
+            @download="(format) => downloadReport('movements', format, movements, movementParams())"
+          />
         </div>
 
         <ErrorState v-if="movements.error" :message="movements.error" @retry="loadMovements" />
@@ -838,15 +796,12 @@ onBeforeUnmount(() => {
               <span v-if="lowStock.generatedAt"> &middot; diperbarui {{ formatDateTime(lowStock.generatedAt) }}</span>
             </p>
           </div>
-          <button
-            type="button"
-            class="btn btn-secondary btn-sm self-start sm:self-auto"
-            :disabled="lowStock.exporting || lowStock.loading"
-            @click="exportActive"
-          >
-            <Download class="h-4 w-4" aria-hidden="true" />
-            {{ lowStock.exporting ? 'Mengunduh...' : 'Unduh CSV' }}
-          </button>
+          <ReportExportActions
+            :loading="lowStock.loading"
+            :exporting="lowStock.exportingFormat"
+            @refresh="loadLowStock"
+            @download="(format) => downloadReport('low-stock', format, lowStock, lowStockParams())"
+          />
         </div>
 
         <ErrorState v-if="lowStock.error" :message="lowStock.error" @retry="loadLowStock" />
